@@ -10,6 +10,7 @@ final class Cloudari_BioEnergy_Core_Plugin {
         Cloudari_BioEnergy_Controller_Auth::register();
         Cloudari_BioEnergy_Controller_Access::register();
         Cloudari_BioEnergy_Controller_Admin_Members::register();
+        Cloudari_BioEnergy_Controller_Contact_Widgets::register();
         Cloudari_BioEnergy_Controller_Login::register();
         Cloudari_BioEnergy_Controller_Menu::register();
     }

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Cloudari BioEnergy Essentials
  * Description: Adds isolated bcrypt login and members-area access control for the EERA Bioenergy Elementor kit.
- * Version: 1.4.13
+ * Version: 1.4.14
  * Author: Cloudari
  * Text Domain: cloudari-bioenergy-essentials
  * Update URI: https://github.com/daviidxestrada/cloudari-bioenergy-essentials
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('CLOUDARI_BIOENERGY_ESSENTIALS_VERSION', '1.4.13');
+define('CLOUDARI_BIOENERGY_ESSENTIALS_VERSION', '1.4.14');
 define('CLOUDARI_BIOENERGY_ESSENTIALS_FILE', __FILE__);
 define('CLOUDARI_BIOENERGY_ESSENTIALS_DIR', plugin_dir_path(__FILE__));
 define('CLOUDARI_BIOENERGY_ESSENTIALS_VIEW_DIR', CLOUDARI_BIOENERGY_ESSENTIALS_DIR . 'app/Views/');
@@ -103,6 +103,7 @@ $cloudari_bioenergy_files = array(
     'app/Controllers/class-auth-controller.php',
     'app/Controllers/class-access-controller.php',
     'app/Controllers/class-admin-members-controller.php',
+    'app/Controllers/class-contact-widgets-controller.php',
     'app/Controllers/class-login-controller.php',
     'app/Controllers/class-menu-controller.php',
     'app/Core/class-plugin.php',

@@ -1,0 +1,422 @@
+<?php
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+final class Cloudari_BioEnergy_Controller_Contact_Widgets {
+    const OPTION_NAME = 'cloudari_bioenergy_contact_widgets';
+
+    public static function register() {
+        add_action('admin_menu', array(__CLASS__, 'register_menu'));
+        add_action('admin_post_cloudari_bioenergy_contact_save', array(__CLASS__, 'save'));
+        add_shortcode('eera_contact_widget_1', array(__CLASS__, 'render_widget_1'));
+        add_shortcode('eera_contact_widget_2', array(__CLASS__, 'render_widget_2'));
+        add_shortcode('eera_contact_widget_3', array(__CLASS__, 'render_widget_3'));
+    }
+
+    public static function register_menu() {
+        add_menu_page(
+            'Datos Contacto',
+            'Datos Contacto',
+            'manage_options',
+            'cloudari-bioenergy-contact-data',
+            array(__CLASS__, 'render_admin_page'),
+            'dashicons-email-alt',
+            58
+        );
+    }
+
+    public static function render_admin_page() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        $data = self::data();
+        $saved = isset($_GET['cloudari_contact_saved']);
+        ?>
+        <div class="wrap cloudari-contact-admin">
+            <h1>Datos Contacto</h1>
+            <?php if ($saved) : ?>
+                <div class="notice notice-success is-dismissible"><p>Datos guardados.</p></div>
+            <?php endif; ?>
+            <p>Shortcodes disponibles: <code>[eera_contact_widget_1]</code>, <code>[eera_contact_widget_2]</code>, <code>[eera_contact_widget_3]</code>.</p>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <?php wp_nonce_field('cloudari_bioenergy_contact_save'); ?>
+                <input type="hidden" name="action" value="cloudari_bioenergy_contact_save">
+
+                <h2>Widget 1 - Joint Programme Coordinator</h2>
+                <div class="cloudari-contact-panel">
+                    <p>
+                        <label>Titulo<br>
+                            <input class="regular-text" type="text" name="contact[widget1][title]" value="<?php echo esc_attr($data['widget1']['title']); ?>">
+                        </label>
+                    </p>
+                    <?php self::render_repeatable_admin('Emails', 'contact[widget1][emails]', $data['widget1']['emails'], 'email'); ?>
+                </div>
+
+                <h2>Widget 2 - Subprogrammes Coordinators</h2>
+                <?php foreach ($data['widget2']['cards'] as $index => $card) : ?>
+                    <div class="cloudari-contact-panel">
+                        <h3>Card <?php echo esc_html((string) ($index + 1)); ?></h3>
+                        <p>
+                            <label>Titulo<br>
+                                <input class="large-text" type="text" name="contact[widget2][cards][<?php echo esc_attr((string) $index); ?>][title]" value="<?php echo esc_attr($card['title']); ?>">
+                            </label>
+                        </p>
+                        <p>
+                            <label>Nombre<br>
+                                <input class="large-text" type="text" name="contact[widget2][cards][<?php echo esc_attr((string) $index); ?>][name]" value="<?php echo esc_attr($card['name']); ?>">
+                            </label>
+                        </p>
+                        <p>
+                            <label>Organizacion<br>
+                                <input class="large-text" type="text" name="contact[widget2][cards][<?php echo esc_attr((string) $index); ?>][organization]" value="<?php echo esc_attr($card['organization']); ?>">
+                            </label>
+                        </p>
+                        <?php self::render_repeatable_admin('Emails', 'contact[widget2][cards][' . $index . '][emails]', $card['emails'], 'email'); ?>
+                    </div>
+                <?php endforeach; ?>
+
+                <h2>Widget 3 - Joint Programme Secretariat</h2>
+                <?php foreach ($data['widget3']['cards'] as $index => $card) : ?>
+                    <div class="cloudari-contact-panel">
+                        <h3>Card <?php echo esc_html((string) ($index + 1)); ?>: <?php echo esc_html($card['title']); ?></h3>
+                        <input type="hidden" name="contact[widget3][cards][<?php echo esc_attr((string) $index); ?>][type]" value="<?php echo esc_attr($card['type']); ?>">
+                        <p>
+                            <label>Titulo<br>
+                                <input class="large-text" type="text" name="contact[widget3][cards][<?php echo esc_attr((string) $index); ?>][title]" value="<?php echo esc_attr($card['title']); ?>">
+                            </label>
+                        </p>
+                        <?php if ('email' === $card['type']) : ?>
+                            <?php self::render_repeatable_admin('Emails', 'contact[widget3][cards][' . $index . '][emails]', $card['emails'], 'email'); ?>
+                        <?php elseif ('phone' === $card['type']) : ?>
+                            <?php self::render_repeatable_admin('Telefonos', 'contact[widget3][cards][' . $index . '][phones]', $card['phones'], 'text'); ?>
+                        <?php else : ?>
+                            <p>
+                                <label>Lineas de direccion<br>
+                                    <textarea class="large-text" rows="4" name="contact[widget3][cards][<?php echo esc_attr((string) $index); ?>][lines]"><?php echo esc_textarea(implode("\n", $card['lines'])); ?></textarea>
+                                </label>
+                            </p>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+
+                <?php submit_button('Guardar datos contacto'); ?>
+            </form>
+        </div>
+        <style>
+            .cloudari-contact-panel { background: #fff; border: 1px solid #dcdcde; margin: 16px 0; max-width: 980px; padding: 16px 18px; }
+            .cloudari-contact-repeatable__row { align-items: center; display: flex; gap: 8px; margin: 0 0 8px; }
+            .cloudari-contact-repeatable__row input { max-width: 520px; width: 100%; }
+        </style>
+        <script>
+            (function () {
+                document.addEventListener('click', function (event) {
+                    var add = event.target.closest('[data-cloudari-add-row]');
+                    if (add) {
+                        event.preventDefault();
+                        var wrap = add.closest('[data-cloudari-repeatable]');
+                        var items = wrap && wrap.querySelector('[data-cloudari-repeatable-items]');
+                        if (!items) {
+                            return;
+                        }
+                        var row = document.createElement('div');
+                        row.className = 'cloudari-contact-repeatable__row';
+                        row.innerHTML = '<input type="' + wrap.dataset.type + '" name="' + wrap.dataset.name + '[]" value=""> <button type="button" class="button" data-cloudari-remove-row>Eliminar</button>';
+                        items.appendChild(row);
+                        row.querySelector('input').focus();
+                    }
+
+                    var remove = event.target.closest('[data-cloudari-remove-row]');
+                    if (remove) {
+                        event.preventDefault();
+                        var rowToRemove = remove.closest('.cloudari-contact-repeatable__row');
+                        if (rowToRemove) {
+                            rowToRemove.remove();
+                        }
+                    }
+                });
+            }());
+        </script>
+        <?php
+    }
+
+    public static function save() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Forbidden');
+        }
+
+        check_admin_referer('cloudari_bioenergy_contact_save');
+
+        $raw = isset($_POST['contact']) && is_array($_POST['contact']) ? wp_unslash($_POST['contact']) : array();
+        update_option(self::OPTION_NAME, self::sanitize_data($raw), false);
+
+        wp_safe_redirect(add_query_arg('cloudari_contact_saved', '1', admin_url('admin.php?page=cloudari-bioenergy-contact-data')));
+        exit;
+    }
+
+    public static function render_widget_1() {
+        $data = self::data();
+        $card = $data['widget1'];
+
+        ob_start();
+        ?>
+        <div class="eera-contact-card-widget" role="group" aria-label="<?php echo esc_attr($card['title']); ?>">
+            <?php echo self::widget_1_styles(); ?>
+            <article class="eera-contact-card-widget__card">
+                <span class="eera-contact-card-widget__icon" aria-hidden="true"><?php echo self::icon_svg('email'); ?></span>
+                <h3 class="eera-contact-card-widget__title"><?php echo esc_html($card['title']); ?></h3>
+                <p class="eera-contact-card-widget__details"><?php echo self::email_links($card['emails'], 'eera-contact-card-widget__link'); ?></p>
+            </article>
+        </div>
+        <?php
+        return (string) ob_get_clean();
+    }
+
+    public static function render_widget_2() {
+        $data = self::data();
+        $cards = $data['widget2']['cards'];
+
+        ob_start();
+        ?>
+        <section class="eera-subprogrammes-widget" aria-label="Subprogrammes Coordinators">
+            <?php echo self::widget_2_styles(); ?>
+            <div class="eera-subprogrammes-widget__grid">
+                <?php foreach (array_slice($cards, 0, 3) as $card) : ?>
+                    <?php echo self::subprogramme_card($card); ?>
+                <?php endforeach; ?>
+            </div>
+            <?php if (count($cards) > 3) : ?>
+                <div class="eera-subprogrammes-widget__grid eera-subprogrammes-widget__grid--two">
+                    <?php foreach (array_slice($cards, 3) as $card) : ?>
+                        <?php echo self::subprogramme_card($card); ?>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </section>
+        <?php
+        return (string) ob_get_clean();
+    }
+
+    public static function render_widget_3() {
+        $data = self::data();
+
+        ob_start();
+        ?>
+        <section class="eera-jp-secretariat-widget" aria-label="Joint Programme Secretariat contact cards">
+            <?php echo self::widget_3_styles(); ?>
+            <div class="eera-jp-secretariat-widget__grid">
+                <?php foreach ($data['widget3']['cards'] as $card) : ?>
+                    <?php echo self::secretariat_card($card); ?>
+                <?php endforeach; ?>
+            </div>
+            <?php echo self::copy_script(); ?>
+        </section>
+        <?php
+        return (string) ob_get_clean();
+    }
+
+    private static function render_repeatable_admin($label, $name, array $values, $type) {
+        $values = $values ? $values : array('');
+        ?>
+        <div class="cloudari-contact-repeatable" data-cloudari-repeatable data-name="<?php echo esc_attr($name); ?>" data-type="<?php echo esc_attr($type); ?>">
+            <p><strong><?php echo esc_html($label); ?></strong></p>
+            <div data-cloudari-repeatable-items>
+                <?php foreach ($values as $value) : ?>
+                    <div class="cloudari-contact-repeatable__row">
+                        <input type="<?php echo esc_attr($type); ?>" name="<?php echo esc_attr($name); ?>[]" value="<?php echo esc_attr($value); ?>">
+                        <button type="button" class="button" data-cloudari-remove-row>Eliminar</button>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <button type="button" class="button" data-cloudari-add-row>Anadir linea</button>
+        </div>
+        <?php
+    }
+
+    private static function data() {
+        return self::merge_data(get_option(self::OPTION_NAME, array()));
+    }
+
+    private static function merge_data($stored) {
+        $defaults = self::defaults();
+        if (!is_array($stored)) {
+            return $defaults;
+        }
+
+        $data = array_replace_recursive($defaults, $stored);
+        return self::sanitize_data($data);
+    }
+
+    private static function sanitize_data($raw) {
+        $defaults = self::defaults();
+        $raw = is_array($raw) ? $raw : array();
+
+        $data = $defaults;
+        $data['widget1']['title'] = self::text($raw['widget1']['title'] ?? $defaults['widget1']['title']);
+        $data['widget1']['emails'] = self::emails($raw['widget1']['emails'] ?? $defaults['widget1']['emails']);
+
+        foreach ($defaults['widget2']['cards'] as $index => $card) {
+            $raw_card = $raw['widget2']['cards'][$index] ?? array();
+            $data['widget2']['cards'][$index] = array(
+                'title' => self::text($raw_card['title'] ?? $card['title']),
+                'name' => self::text($raw_card['name'] ?? $card['name']),
+                'organization' => self::text($raw_card['organization'] ?? $card['organization']),
+                'emails' => self::emails($raw_card['emails'] ?? $card['emails']),
+            );
+        }
+
+        foreach ($defaults['widget3']['cards'] as $index => $card) {
+            $raw_card = $raw['widget3']['cards'][$index] ?? array();
+            $type = in_array(($raw_card['type'] ?? $card['type']), array('email', 'phone', 'address'), true) ? ($raw_card['type'] ?? $card['type']) : $card['type'];
+            $data['widget3']['cards'][$index] = array(
+                'type' => $type,
+                'title' => self::text($raw_card['title'] ?? $card['title']),
+                'emails' => self::emails($raw_card['emails'] ?? $card['emails']),
+                'phones' => self::texts($raw_card['phones'] ?? $card['phones']),
+                'lines' => self::textarea_lines($raw_card['lines'] ?? $card['lines']),
+            );
+        }
+
+        return $data;
+    }
+
+    private static function defaults() {
+        return array(
+            'widget1' => array(
+                'title' => 'Joint Programme Coordinator',
+                'emails' => array('mchrist@cres.gr'),
+            ),
+            'widget2' => array(
+                'cards' => array(
+                    array('title' => 'Subprogramme 1 (Sustainable biomass production)', 'name' => 'Dr. Wolter Elbersen', 'organization' => 'Wageningen, University & Research (WUR)', 'emails' => array('wolter.elbersen@wur.nl')),
+                    array('title' => 'Subprogramme 2 (Thermochemical platform)', 'name' => 'Berend Vreugdenhil', 'organization' => 'TNO', 'emails' => array('berend.vreugdenhil@tno.nl')),
+                    array('title' => 'Subprogramme 3 (Biochemical platform)', 'name' => 'Dr. Marcelo E. Domine', 'organization' => 'Institute of Chemical Technology - ITQ (UPV-CSIC)', 'emails' => array('mdomine@itq.upv.es')),
+                    array('title' => 'Subprogramme 4 (Stationary bioenergy)', 'name' => 'Berend Vreugdenhil', 'organization' => 'TNO', 'emails' => array('berend.vreugdenhil@tno.nl')),
+                    array('title' => 'Subprogramme 5 (Sustainability / Techno-Economic Analysis / Public Acceptance)', 'name' => 'Dr. Raquel S. Jorge', 'organization' => 'Norwegian University of Science and Technology (NTNU)', 'emails' => array('raquel.s.jorge@ntnu.no')),
+                ),
+            ),
+            'widget3' => array(
+                'cards' => array(
+                    array('type' => 'email', 'title' => 'Email', 'emails' => array('margadegregorio@bioplat.org'), 'phones' => array(), 'lines' => array()),
+                    array('type' => 'phone', 'title' => 'Phone', 'emails' => array(), 'phones' => array('+34 629 485 629'), 'lines' => array()),
+                    array('type' => 'address', 'title' => 'Where', 'emails' => array(), 'phones' => array(), 'lines' => array('c/ Cedaceros 11 2C', '28014 Madrid, Spain')),
+                ),
+            ),
+        );
+    }
+
+    private static function subprogramme_card(array $card) {
+        ob_start();
+        ?>
+        <article class="eera-subprogrammes-widget__card">
+            <span class="eera-subprogrammes-widget__icon" aria-hidden="true"><?php echo self::icon_svg('email'); ?></span>
+            <h3 class="eera-subprogrammes-widget__card-title"><?php echo esc_html($card['title']); ?></h3>
+            <p class="eera-subprogrammes-widget__details">
+                <?php echo esc_html($card['name']); ?><br>
+                <?php echo esc_html($card['organization']); ?><br>
+                <?php echo self::email_links($card['emails'], 'eera-subprogrammes-widget__link'); ?>
+            </p>
+        </article>
+        <?php
+        return (string) ob_get_clean();
+    }
+
+    private static function secretariat_card(array $card) {
+        ob_start();
+        ?>
+        <article class="eera-jp-secretariat-widget__card">
+            <span class="eera-jp-secretariat-widget__icon" aria-hidden="true"><?php echo self::icon_svg($card['type']); ?></span>
+            <h3 class="eera-jp-secretariat-widget__card-title"><?php echo esc_html($card['title']); ?></h3>
+            <p class="eera-jp-secretariat-widget__details"><?php echo self::secretariat_details($card); ?></p>
+            <?php if ('email' === $card['type'] && !empty($card['emails'])) : ?>
+                <button class="eera-jp-secretariat-widget__copy" type="button" data-copy-email="<?php echo esc_attr(implode(', ', $card['emails'])); ?>">Copy email</button>
+            <?php endif; ?>
+        </article>
+        <?php
+        return (string) ob_get_clean();
+    }
+
+    private static function secretariat_details(array $card) {
+        if ('email' === $card['type']) {
+            return self::email_links($card['emails'], 'eera-jp-secretariat-widget__link');
+        }
+
+        if ('phone' === $card['type']) {
+            $links = array();
+            foreach ($card['phones'] as $phone) {
+                $tel = preg_replace('/[^0-9+]/', '', (string) $phone);
+                $links[] = '<a class="eera-jp-secretariat-widget__link" href="tel:' . esc_attr($tel) . '">' . esc_html($phone) . '</a>';
+            }
+            return implode('<br>', $links);
+        }
+
+        return implode('<br>', array_map('esc_html', $card['lines']));
+    }
+
+    private static function email_links(array $emails, $class) {
+        $links = array();
+        foreach ($emails as $email) {
+            $links[] = '<a class="' . esc_attr($class) . '" href="mailto:' . esc_attr($email) . '">' . esc_html($email) . '</a>';
+        }
+        return implode('<br>', $links);
+    }
+
+    private static function emails($values) {
+        $emails = array();
+        foreach ((array) $values as $value) {
+            foreach (preg_split('/[,;\r\n]+/', (string) $value) as $candidate) {
+                $email = sanitize_email(trim($candidate));
+                if ($email && is_email($email)) {
+                    $emails[] = $email;
+                }
+            }
+        }
+        return array_values(array_unique($emails));
+    }
+
+    private static function texts($values) {
+        return array_values(array_filter(array_map(array(__CLASS__, 'text'), (array) $values), 'strlen'));
+    }
+
+    private static function textarea_lines($values) {
+        if (is_array($values)) {
+            return self::texts($values);
+        }
+
+        return self::texts(preg_split('/\r\n|\r|\n/', (string) $values));
+    }
+
+    private static function text($value) {
+        return sanitize_text_field((string) $value);
+    }
+
+    private static function icon_svg($type) {
+        if ('phone' === $type) {
+            return '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.82 19.82 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.82 19.82 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.91.33 1.79.63 2.63a2 2 0 0 1-.45 2.11L8.09 9.66a16 16 0 0 0 6.25 6.25l1.2-1.2a2 2 0 0 1 2.11-.45c.84.3 1.72.51 2.63.63A2 2 0 0 1 22 16.92Z"></path></svg>';
+        }
+
+        if ('address' === $type) {
+            return '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>';
+        }
+
+        return '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a2 2 0 0 1-2.06 0L2 7"></path></svg>';
+    }
+
+    private static function widget_1_styles() {
+        return '<style>.eera-contact-card-widget{--eera-card-green:#bed431;--eera-card-blue:#1c5986;--eera-card-title:#363636;--eera-card-text:#818181;--eera-card-border:#e5e5e5;box-sizing:border-box!important;display:block!important;font-family:"Source Sans Pro",Helvetica,Arial,sans-serif!important;margin:0!important;max-width:100%!important;padding:40px 0 20px!important;width:100%!important}.eera-contact-card-widget *,.eera-contact-card-widget *::before,.eera-contact-card-widget *::after{box-sizing:border-box!important;text-shadow:none!important}.eera-contact-card-widget__card{align-items:center!important;background:rgba(255,255,255,.81)!important;border:1px solid var(--eera-card-border)!important;border-radius:3px!important;display:flex!important;flex-direction:column!important;margin:0!important;min-height:0!important;padding:36px 20px 28px!important;position:relative!important;text-align:center!important;width:100%!important}.eera-contact-card-widget__icon{align-items:center!important;background:var(--eera-card-green)!important;border-radius:30px!important;color:var(--eera-card-blue)!important;display:inline-flex!important;height:56px!important;justify-content:center!important;left:50%!important;margin-left:-27px!important;padding:15px 16px 17px!important;position:absolute!important;top:-30px!important;width:54px!important}.eera-contact-card-widget__icon svg{display:block!important;height:100%!important;stroke:currentColor!important;width:100%!important}.eera-contact-card-widget__title{color:var(--eera-card-title)!important;font-size:20px!important;font-weight:400!important;letter-spacing:0!important;line-height:30px!important;margin:0 0 10px!important}.eera-contact-card-widget__details{color:var(--eera-card-text)!important;font-family:"Varela",Helvetica,Arial,sans-serif!important;font-size:14px!important;font-weight:400!important;line-height:1.8!important;margin:0 0 12px!important;overflow-wrap:anywhere!important}.eera-contact-card-widget__link{color:var(--eera-card-text)!important;font-weight:400!important;text-decoration:none!important}.eera-contact-card-widget__link:hover{color:#00aeef!important}</style>';
+    }
+
+    private static function widget_2_styles() {
+        return '<style>.eera-subprogrammes-widget{--eera-section-bg:#e6efde;--eera-card-green:#bed431;--eera-card-blue:#1c5986;--eera-card-title:#363636;--eera-card-text:#687783;--eera-card-border:#e5e5e5;background:#e6efde!important;background-color:#e6efde!important;box-sizing:border-box!important;color:var(--eera-card-title)!important;display:block!important;font-family:"Source Sans Pro",Helvetica,Arial,sans-serif!important;margin:0!important;max-width:100%!important;overflow:hidden!important;padding:31px 44px 40px!important;width:100%!important}.eera-subprogrammes-widget *,.eera-subprogrammes-widget *::before,.eera-subprogrammes-widget *::after{box-sizing:border-box!important;text-shadow:none!important}.eera-subprogrammes-widget__grid{column-gap:32px!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;margin:0!important;row-gap:0!important;width:100%!important}.eera-subprogrammes-widget__grid--two{grid-template-columns:repeat(2,minmax(0,1fr))!important;margin-top:100px!important}.eera-subprogrammes-widget__card{align-items:center!important;background:rgba(255,255,255,.86)!important;border:1px solid var(--eera-card-border)!important;border-radius:3px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;margin:0!important;min-height:194px!important;min-width:0!important;padding:42px 24px 24px!important;position:relative!important;text-align:center!important;width:100%!important}.eera-subprogrammes-widget__icon{align-items:center!important;background:var(--eera-card-green)!important;border-radius:30px!important;color:var(--eera-card-blue)!important;display:inline-flex!important;height:56px!important;justify-content:center!important;left:50%!important;margin-left:-27px!important;padding:15px 16px 17px!important;position:absolute!important;top:-30px!important;width:54px!important}.eera-subprogrammes-widget__icon svg{display:block!important;height:100%!important;stroke:currentColor!important;width:100%!important}.eera-subprogrammes-widget__card-title{color:var(--eera-card-title)!important;font-size:20px!important;font-weight:400!important;letter-spacing:0!important;line-height:30px!important;margin:0 0 12px!important;white-space:normal!important}.eera-subprogrammes-widget__details{color:var(--eera-card-text)!important;font-family:"Varela",Helvetica,Arial,sans-serif!important;font-size:15px!important;font-weight:400!important;line-height:1.65!important;margin:0!important;overflow-wrap:anywhere!important}.eera-subprogrammes-widget__link{color:var(--eera-card-text)!important;font-weight:400!important;text-decoration:none!important}.eera-subprogrammes-widget__link:hover{color:#00aeef!important}@media(max-width:1024px){.eera-subprogrammes-widget{padding-left:24px!important;padding-right:24px!important}.eera-subprogrammes-widget__grid,.eera-subprogrammes-widget__grid--two{column-gap:28px!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;row-gap:72px!important}.eera-subprogrammes-widget__grid--two{margin-top:72px!important}}@media(max-width:640px){.eera-subprogrammes-widget{padding-left:16px!important;padding-right:16px!important}.eera-subprogrammes-widget__grid,.eera-subprogrammes-widget__grid--two{grid-template-columns:1fr!important;row-gap:72px!important}.eera-subprogrammes-widget__grid--two{margin-top:72px!important}}</style>';
+    }
+
+    private static function widget_3_styles() {
+        return '<style>.eera-jp-secretariat-widget{--eera-section-bg:#fff;--eera-card-green:#bed431;--eera-card-blue:#1c5986;--eera-card-title:#363636;--eera-card-text:#687783;--eera-card-border:#e5e5e5;background:#fff!important;background-color:#fff!important;box-sizing:border-box!important;color:var(--eera-card-title)!important;display:block!important;font-family:"Source Sans Pro",Helvetica,Arial,sans-serif!important;margin:0!important;max-width:100%!important;overflow:hidden!important;padding:31px 44px 40px!important;width:100%!important}.eera-jp-secretariat-widget *,.eera-jp-secretariat-widget *::before,.eera-jp-secretariat-widget *::after{box-sizing:border-box!important;text-shadow:none!important}.eera-jp-secretariat-widget__grid{column-gap:32px!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;margin:0!important;row-gap:0!important;width:100%!important}.eera-jp-secretariat-widget__card{align-items:center!important;background:rgba(255,255,255,.86)!important;border:1px solid var(--eera-card-border)!important;border-radius:3px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;margin:0!important;min-height:194px!important;min-width:0!important;padding:42px 24px 24px!important;position:relative!important;text-align:center!important;width:100%!important}.eera-jp-secretariat-widget__icon{align-items:center!important;background:var(--eera-card-green)!important;border-radius:30px!important;color:var(--eera-card-blue)!important;display:inline-flex!important;height:56px!important;justify-content:center!important;left:50%!important;margin-left:-27px!important;padding:15px 16px 17px!important;position:absolute!important;top:-30px!important;width:54px!important}.eera-jp-secretariat-widget__icon svg{display:block!important;height:100%!important;stroke:currentColor!important;width:100%!important}.eera-jp-secretariat-widget__card-title{color:var(--eera-card-title)!important;font-size:20px!important;font-weight:400!important;letter-spacing:0!important;line-height:30px!important;margin:0 0 12px!important;white-space:normal!important}.eera-jp-secretariat-widget__details{color:var(--eera-card-text)!important;font-family:"Varela",Helvetica,Arial,sans-serif!important;font-size:15px!important;font-weight:400!important;line-height:1.65!important;margin:0!important;overflow-wrap:anywhere!important}.eera-jp-secretariat-widget__link{color:var(--eera-card-text)!important;font-weight:400!important;text-decoration:none!important}.eera-jp-secretariat-widget__link:hover{color:#00aeef!important}.eera-jp-secretariat-widget__copy{background:transparent!important;border:0!important;color:#00aeef!important;cursor:pointer!important;display:inline-flex!important;font:inherit!important;font-size:12px!important;font-weight:400!important;justify-content:center!important;line-height:23px!important;margin:8px 0 0!important;min-height:0!important;padding:3px!important;text-transform:none!important}.eera-jp-secretariat-widget__copy.is-copied{color:#ed7676!important}@media(max-width:1024px){.eera-jp-secretariat-widget{padding-left:24px!important;padding-right:24px!important}.eera-jp-secretariat-widget__grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;row-gap:72px!important}}@media(max-width:640px){.eera-jp-secretariat-widget{padding-left:16px!important;padding-right:16px!important}.eera-jp-secretariat-widget__grid{grid-template-columns:1fr!important}}</style>';
+    }
+
+    private static function copy_script() {
+        return '<script>(function(){var widget=document.currentScript&&document.currentScript.closest(".eera-jp-secretariat-widget");if(!widget||!navigator.clipboard){return;}widget.addEventListener("click",function(event){var button=event.target.closest("[data-copy-email]");if(!button||!widget.contains(button)){return;}var originalText=button.textContent;navigator.clipboard.writeText(button.getAttribute("data-copy-email")).then(function(){button.textContent="Copied";button.classList.add("is-copied");window.setTimeout(function(){button.textContent=originalText;button.classList.remove("is-copied");},1600);});});}());</script>';
+    }
+}

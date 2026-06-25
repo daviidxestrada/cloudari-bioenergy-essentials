@@ -1,0 +1,220 @@
+<section class="eera-jp-secretariat-widget" aria-label="Joint Programme Secretariat contact cards">
+  <style>
+    .eera-jp-secretariat-widget {
+      --eera-section-bg: #ffffff;
+      --eera-card-green: #bed431;
+      --eera-card-blue: #1c5986;
+      --eera-card-title: #363636;
+      --eera-card-text: #687783;
+      --eera-card-border: #e5e5e5;
+
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+      box-sizing: border-box !important;
+      color: var(--eera-card-title) !important;
+      display: block !important;
+      font-family: "Source Sans Pro", Helvetica, Arial, sans-serif !important;
+      margin: 0 !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
+      padding: 31px 44px 40px !important;
+      width: 100% !important;
+    }
+
+    .eera-jp-secretariat-widget *,
+    .eera-jp-secretariat-widget *::before,
+    .eera-jp-secretariat-widget *::after {
+      box-sizing: border-box !important;
+      text-shadow: none !important;
+    }
+
+    .eera-jp-secretariat-widget__grid {
+      column-gap: 32px !important;
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      margin: 0 !important;
+      row-gap: 0 !important;
+      width: 100% !important;
+    }
+
+    .eera-jp-secretariat-widget__card {
+      align-items: center !important;
+      background: rgba(255, 255, 255, 0.86) !important;
+      border: 1px solid var(--eera-card-border) !important;
+      border-radius: 3px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+      margin: 0 !important;
+      min-height: 194px !important;
+      min-width: 0 !important;
+      padding: 42px 24px 24px !important;
+      position: relative !important;
+      text-align: center !important;
+      width: 100% !important;
+    }
+
+    .eera-jp-secretariat-widget__icon {
+      align-items: center !important;
+      background: var(--eera-card-green) !important;
+      border-radius: 30px !important;
+      color: var(--eera-card-blue) !important;
+      display: inline-flex !important;
+      height: 56px !important;
+      justify-content: center !important;
+      left: 50% !important;
+      margin-left: -27px !important;
+      padding: 15px 16px 17px !important;
+      position: absolute !important;
+      top: -30px !important;
+      width: 54px !important;
+    }
+
+    .eera-jp-secretariat-widget__icon svg {
+      display: block !important;
+      height: 100% !important;
+      stroke: currentColor !important;
+      width: 100% !important;
+    }
+
+    .eera-jp-secretariat-widget__card-title {
+      color: var(--eera-card-title) !important;
+      font-size: 20px !important;
+      font-weight: 400 !important;
+      letter-spacing: 0 !important;
+      line-height: 30px !important;
+      margin: 0 0 12px !important;
+      white-space: normal !important;
+    }
+
+    .eera-jp-secretariat-widget__details {
+      color: var(--eera-card-text) !important;
+      font-family: "Varela", Helvetica, Arial, sans-serif !important;
+      font-size: 15px !important;
+      font-weight: 400 !important;
+      line-height: 1.65 !important;
+      margin: 0 !important;
+      overflow-wrap: anywhere !important;
+    }
+
+    .eera-jp-secretariat-widget__link {
+      color: var(--eera-card-text) !important;
+      font-weight: 400 !important;
+      text-decoration: none !important;
+    }
+
+    .eera-jp-secretariat-widget__link:hover {
+      color: #00aeef !important;
+    }
+
+    .eera-jp-secretariat-widget__copy {
+      background: transparent !important;
+      border: 0 !important;
+      color: #00aeef !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      font: inherit !important;
+      font-size: 12px !important;
+      font-weight: 400 !important;
+      justify-content: center !important;
+      line-height: 23px !important;
+      margin: 8px 0 0 !important;
+      min-height: 0 !important;
+      padding: 3px !important;
+      text-transform: none !important;
+    }
+
+    .eera-jp-secretariat-widget__copy.is-copied {
+      color: #ed7676 !important;
+    }
+
+    @media (max-width: 1024px) {
+      .eera-jp-secretariat-widget {
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+      }
+
+      .eera-jp-secretariat-widget__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        row-gap: 72px !important;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .eera-jp-secretariat-widget {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+      }
+
+      .eera-jp-secretariat-widget__grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+  </style>
+
+  <div class="eera-jp-secretariat-widget__grid">
+    <article class="eera-jp-secretariat-widget__card">
+      <span class="eera-jp-secretariat-widget__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+          <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+          <path d="m22 7-8.97 5.7a2 2 0 0 1-2.06 0L2 7"></path>
+        </svg>
+      </span>
+      <h3 class="eera-jp-secretariat-widget__card-title">Email</h3>
+      <p class="eera-jp-secretariat-widget__details">
+        <a class="eera-jp-secretariat-widget__link" href="mailto:margadegregorio@bioplat.org">margadegregorio@bioplat.org</a>
+      </p>
+      <button class="eera-jp-secretariat-widget__copy" type="button" data-copy-email="margadegregorio@bioplat.org">Copy email</button>
+    </article>
+
+    <article class="eera-jp-secretariat-widget__card">
+      <span class="eera-jp-secretariat-widget__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.82 19.82 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.82 19.82 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.91.33 1.79.63 2.63a2 2 0 0 1-.45 2.11L8.09 9.66a16 16 0 0 0 6.25 6.25l1.2-1.2a2 2 0 0 1 2.11-.45c.84.3 1.72.51 2.63.63A2 2 0 0 1 22 16.92Z"></path>
+        </svg>
+      </span>
+      <h3 class="eera-jp-secretariat-widget__card-title">Phone</h3>
+      <p class="eera-jp-secretariat-widget__details">
+        <a class="eera-jp-secretariat-widget__link" href="tel:+34629485629">+34 629 485 629</a>
+      </p>
+    </article>
+
+    <article class="eera-jp-secretariat-widget__card">
+      <span class="eera-jp-secretariat-widget__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+          <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+      </span>
+      <h3 class="eera-jp-secretariat-widget__card-title">Where</h3>
+      <p class="eera-jp-secretariat-widget__details">c/ Cedaceros 11 2C<br>28014 Madrid, Spain</p>
+    </article>
+  </div>
+
+  <script>
+    (function () {
+      var widget = document.currentScript && document.currentScript.closest(".eera-jp-secretariat-widget");
+      if (!widget || !navigator.clipboard) {
+        return;
+      }
+
+      widget.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-copy-email]");
+        if (!button || !widget.contains(button)) {
+          return;
+        }
+
+        var originalText = button.textContent;
+        navigator.clipboard.writeText(button.getAttribute("data-copy-email")).then(function () {
+          button.textContent = "Copied";
+          button.classList.add("is-copied");
+
+          window.setTimeout(function () {
+            button.textContent = originalText;
+            button.classList.remove("is-copied");
+          }, 1600);
+        });
+      });
+    }());
+  </script>
+</section>

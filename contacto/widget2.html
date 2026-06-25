@@ -1,0 +1,245 @@
+<section class="eera-subprogrammes-widget" aria-label="Subprogrammes Coordinators">
+  <style>
+    .eera-subprogrammes-widget {
+      --eera-section-bg: #e6efde;
+      --eera-card-green: #bed431;
+      --eera-card-blue: #1c5986;
+      --eera-card-title: #363636;
+      --eera-card-text: #687783;
+      --eera-card-border: #e5e5e5;
+
+      background: #e6efde !important;
+      background-color: #e6efde !important;
+      box-sizing: border-box !important;
+      color: var(--eera-card-title) !important;
+      display: block !important;
+      font-family: "Source Sans Pro", Helvetica, Arial, sans-serif !important;
+      margin: 0 !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
+      padding: 31px 44px 40px !important;
+      width: 100% !important;
+    }
+
+    .eera-subprogrammes-widget *,
+    .eera-subprogrammes-widget *::before,
+    .eera-subprogrammes-widget *::after {
+      box-sizing: border-box !important;
+      text-shadow: none !important;
+    }
+
+    .eera-subprogrammes-widget__grid {
+      column-gap: 32px !important;
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      margin: 0 !important;
+      row-gap: 0 !important;
+      width: 100% !important;
+    }
+
+    .eera-subprogrammes-widget__grid--two {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      margin-top: 100px !important;
+    }
+
+    .eera-subprogrammes-widget__card {
+      align-items: center !important;
+      background: rgba(255, 255, 255, 0.86) !important;
+      border: 1px solid var(--eera-card-border) !important;
+      border-radius: 3px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+      margin: 0 !important;
+      min-height: 194px !important;
+      min-width: 0 !important;
+      padding: 42px 24px 24px !important;
+      position: relative !important;
+      text-align: center !important;
+      width: 100% !important;
+    }
+
+    .eera-subprogrammes-widget__icon {
+      align-items: center !important;
+      background: var(--eera-card-green) !important;
+      border-radius: 30px !important;
+      color: var(--eera-card-blue) !important;
+      display: inline-flex !important;
+      height: 56px !important;
+      justify-content: center !important;
+      left: 50% !important;
+      margin-left: -27px !important;
+      padding: 15px 16px 17px !important;
+      position: absolute !important;
+      top: -30px !important;
+      width: 54px !important;
+    }
+
+    .eera-subprogrammes-widget__icon svg {
+      display: block !important;
+      height: 100% !important;
+      stroke: currentColor !important;
+      width: 100% !important;
+    }
+
+    .eera-subprogrammes-widget__card-title {
+      color: var(--eera-card-title) !important;
+      font-size: 20px !important;
+      font-weight: 400 !important;
+      letter-spacing: 0 !important;
+      line-height: 30px !important;
+      margin: 0 0 12px !important;
+      white-space: normal !important;
+    }
+
+    .eera-subprogrammes-widget__details {
+      color: var(--eera-card-text) !important;
+      font-family: "Varela", Helvetica, Arial, sans-serif !important;
+      font-size: 15px !important;
+      font-weight: 400 !important;
+      line-height: 1.65 !important;
+      margin: 0 !important;
+      overflow-wrap: anywhere !important;
+    }
+
+    .eera-subprogrammes-widget__details strong {
+      color: var(--eera-card-text) !important;
+      font-weight: 400 !important;
+    }
+
+    .eera-subprogrammes-widget__link {
+      color: var(--eera-card-text) !important;
+      font-weight: 400 !important;
+      text-decoration: none !important;
+    }
+
+    .eera-subprogrammes-widget__link:hover {
+      color: #00aeef !important;
+    }
+
+    @media (max-width: 1024px) {
+      .eera-subprogrammes-widget {
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+      }
+
+      .eera-subprogrammes-widget__grid,
+      .eera-subprogrammes-widget__grid--two {
+        column-gap: 28px !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        row-gap: 72px !important;
+      }
+
+      .eera-subprogrammes-widget__card {
+        min-height: 214px !important;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+      }
+
+      .eera-subprogrammes-widget__grid--two {
+        margin-top: 72px !important;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .eera-subprogrammes-widget {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+      }
+
+      .eera-subprogrammes-widget__grid,
+      .eera-subprogrammes-widget__grid--two {
+        grid-template-columns: 1fr !important;
+        row-gap: 72px !important;
+      }
+
+      .eera-subprogrammes-widget__grid--two {
+        margin-top: 72px !important;
+      }
+
+      .eera-subprogrammes-widget__card-title {
+        font-size: 19px !important;
+        line-height: 28px !important;
+      }
+    }
+  </style>
+
+  <div class="eera-subprogrammes-widget__grid">
+    <article class="eera-subprogrammes-widget__card">
+      <span class="eera-subprogrammes-widget__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+          <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+          <path d="m22 7-8.97 5.7a2 2 0 0 1-2.06 0L2 7"></path>
+        </svg>
+      </span>
+      <h3 class="eera-subprogrammes-widget__card-title">Subprogramme 1 (Sustainable biomass production)</h3>
+      <p class="eera-subprogrammes-widget__details">
+        Dr. Wolter Elbersen<br>
+        Wageningen, University &amp; Research (WUR)<br>
+        <a class="eera-subprogrammes-widget__link" href="mailto:wolter.elbersen@wur.nl">wolter.elbersen@wur.nl</a>
+      </p>
+    </article>
+
+    <article class="eera-subprogrammes-widget__card">
+      <span class="eera-subprogrammes-widget__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+          <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+          <path d="m22 7-8.97 5.7a2 2 0 0 1-2.06 0L2 7"></path>
+        </svg>
+      </span>
+      <h3 class="eera-subprogrammes-widget__card-title">Subprogramme 2 (Thermochemical platform)</h3>
+      <p class="eera-subprogrammes-widget__details">
+        Berend Vreugdenhil<br>
+        TNO<br>
+        <a class="eera-subprogrammes-widget__link" href="mailto:berend.vreugdenhil@tno.nl">berend.vreugdenhil@tno.nl</a>
+      </p>
+    </article>
+
+    <article class="eera-subprogrammes-widget__card">
+      <span class="eera-subprogrammes-widget__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+          <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+          <path d="m22 7-8.97 5.7a2 2 0 0 1-2.06 0L2 7"></path>
+        </svg>
+      </span>
+      <h3 class="eera-subprogrammes-widget__card-title">Subprogramme 3 (Biochemical platform)</h3>
+      <p class="eera-subprogrammes-widget__details">
+        Dr. Marcelo E. Domine<br>
+        Institute of Chemical Technology - ITQ (UPV-CSIC)<br>
+        <a class="eera-subprogrammes-widget__link" href="mailto:mdomine@itq.upv.es">mdomine@itq.upv.es</a>
+      </p>
+    </article>
+  </div>
+
+  <div class="eera-subprogrammes-widget__grid eera-subprogrammes-widget__grid--two">
+    <article class="eera-subprogrammes-widget__card">
+      <span class="eera-subprogrammes-widget__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+          <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+          <path d="m22 7-8.97 5.7a2 2 0 0 1-2.06 0L2 7"></path>
+        </svg>
+      </span>
+      <h3 class="eera-subprogrammes-widget__card-title">Subprogramme 4 (Stationary bioenergy)</h3>
+      <p class="eera-subprogrammes-widget__details">
+        Berend Vreugdenhil<br>
+        TNO<br>
+        <a class="eera-subprogrammes-widget__link" href="mailto:berend.vreugdenhil@tno.nl">berend.vreugdenhil@tno.nl</a>
+      </p>
+    </article>
+
+    <article class="eera-subprogrammes-widget__card">
+      <span class="eera-subprogrammes-widget__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+          <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+          <path d="m22 7-8.97 5.7a2 2 0 0 1-2.06 0L2 7"></path>
+        </svg>
+      </span>
+      <h3 class="eera-subprogrammes-widget__card-title">Subprogramme 5 (Sustainability / Techno-Economic Analysis / Public Acceptance)</h3>
+      <p class="eera-subprogrammes-widget__details">
+        Dr. Raquel S. Jorge<br>
+        Norwegian University of Science and Technology (NTNU)<br>
+        <a class="eera-subprogrammes-widget__link" href="mailto:raquel.s.jorge@ntnu.no">raquel.s.jorge@ntnu.no</a>
+      </p>
+    </article>
+  </div>
+</section>
