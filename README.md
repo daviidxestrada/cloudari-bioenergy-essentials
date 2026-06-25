@@ -1,36 +1,33 @@
 # Cloudari BioEnergy Essentials
 
-WordPress plugin for EERA Bioenergy member access control.
+WordPress plugin for EERA Bioenergy member access control and recovered publication redirects.
 
-Current live plugin observed on `eerabioenergy.eu`:
+## Plugin
 
 - Plugin name: `Cloudari BioEnergy Essentials`
 - Slug: `cloudari-bioenergy-essentials`
-- Main file: `cloudari-bioenergy-essentials/cloudari-bioenergy-essentials.php`
-- Current version: `1.4.8`
-- Description: `Adds isolated bcrypt login and members-area access control for the EERA Bioenergy Elementor kit.`
+- Main file: `cloudari-bioenergy-essentials.php`
+- Current live version imported from `eerabioenergy.eu`: `1.4.10`
+- Update source: `https://github.com/daviidxestrada/cloudari-bioenergy-essentials`
 
 ## GitHub Updates
 
-This repository includes [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checker) vendored in `plugin-update-checker/`.
+This repository includes [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checker) in `plugin-update-checker/`.
 
-Load the updater from the plugin main file:
+The main plugin file loads:
 
 ```php
-require_once __DIR__ . '/includes/updater.php';
+require_once CLOUDARI_BIOENERGY_ESSENTIALS_DIR . 'includes/updater.php';
 ```
 
-The updater points to:
-
-```text
-https://github.com/daviidxestrada/cloudari-bioenergy-essentials
-```
+`includes/updater.php` points Plugin Update Checker at this public GitHub repository and the `main` branch.
 
 ## Release Flow
 
 1. Update the plugin header version in `cloudari-bioenergy-essentials.php`.
-2. Commit and push to `main`.
-3. Create a GitHub release/tag, for example `v1.4.9`.
-4. WordPress will detect the update through Plugin Update Checker.
+2. Update `CLOUDARI_BIOENERGY_ESSENTIALS_VERSION` to the same value.
+3. Update `readme.txt` stable tag and changelog.
+4. Commit and push to `main`.
+5. Create a GitHub release/tag, for example `v1.4.11`.
 
-Do not create a public release from this repository until the full live plugin code has been added here.
+WordPress will detect the update through Plugin Update Checker.
