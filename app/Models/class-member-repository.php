@@ -114,6 +114,15 @@ final class Cloudari_BioEnergy_Model_Member_Repository {
         return self::normalize_username($session['username']);
     }
 
+    public static function current_role() {
+        $session = Cloudari_BioEnergy_Model_Session_Repository::current_member();
+        if (is_array($session) && !empty($session['role'])) {
+            return sanitize_text_field((string) $session['role']);
+        }
+
+        return self::ROLE_MEMBER;
+    }
+
     public static function normalize_roles() {
         $members = self::all();
         if ($members) {

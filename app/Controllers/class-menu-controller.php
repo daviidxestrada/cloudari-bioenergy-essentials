@@ -59,12 +59,12 @@ final class Cloudari_BioEnergy_Controller_Menu {
             'cloudari_bioenergy_logout'
         );
 
-        $label = sprintf('Welcome Back %s', $username);
+        $label = sprintf('Bienvenid@ %s', $username);
 
         $items .= '<li class="menu-item menu-item-has-children cloudari-member-menu">';
         $items .= '<a href="' . esc_url(Cloudari_BioEnergy_Model_Session_Repository::private_url(Cloudari_BioEnergy_Model_Session_Repository::default_private_url())) . '" aria-haspopup="true" aria-expanded="false">' . esc_html($label) . '</a>';
         $items .= '<ul class="sub-menu">';
-        $items .= '<li class="menu-item cloudari-member-menu-role"><span>' . esc_html(Cloudari_BioEnergy_Model_Member_Repository::ROLE_MEMBER) . '</span></li>';
+        $items .= '<li class="menu-item cloudari-member-menu-role"><span>' . esc_html(Cloudari_BioEnergy_Model_Member_Repository::current_role()) . '</span></li>';
         $items .= '<li class="menu-item"><a href="' . esc_url($logout_url) . '">Sign out</a></li>';
         $items .= '</ul>';
         $items .= '</li>';
@@ -224,7 +224,7 @@ final class Cloudari_BioEnergy_Controller_Menu {
                     link.href = data.default_url;
                     link.setAttribute('aria-haspopup', 'true');
                     link.setAttribute('aria-expanded', 'false');
-                    link.textContent = 'Welcome Back ' + data.username;
+                    link.textContent = data.welcome_label || ('Bienvenid@ ' + data.username);
 
                     var submenu = document.createElement('ul');
                     submenu.className = 'sub-menu';
@@ -300,7 +300,7 @@ final class Cloudari_BioEnergy_Controller_Menu {
 
                             if (link) {
                                 link.href = data.default_url;
-                                link.textContent = 'Welcome Back ' + data.username;
+                                link.textContent = data.welcome_label || ('Bienvenid@ ' + data.username);
                             }
                             if (role) {
                                 role.textContent = data.role;
@@ -334,11 +334,14 @@ final class Cloudari_BioEnergy_Controller_Menu {
             'cloudari_bioenergy_logout'
         );
 
+        $username = Cloudari_BioEnergy_Model_Member_Repository::current_username();
+
         wp_send_json_success(
             array(
                 'logged_in' => true,
-                'username' => Cloudari_BioEnergy_Model_Member_Repository::current_username(),
-                'role' => Cloudari_BioEnergy_Model_Member_Repository::ROLE_MEMBER,
+                'username' => $username,
+                'welcome_label' => sprintf('Bienvenid@ %s', $username),
+                'role' => Cloudari_BioEnergy_Model_Member_Repository::current_role(),
                 'logout_url' => $logout_url,
                 'default_url' => Cloudari_BioEnergy_Model_Session_Repository::private_url(Cloudari_BioEnergy_Model_Session_Repository::default_private_url()),
                 'protected_slugs' => Cloudari_BioEnergy_Model_Settings::protected_slugs(),

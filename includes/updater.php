@@ -21,4 +21,5 @@ if ( file_exists( $cloudari_bioenergy_puc ) ) {
 	);
 
 	$cloudari_bioenergy_update_checker->setBranch( 'main' );
+	$cloudari_bioenergy_update_checker->getVcsApi()->enableReleaseAssets( '/\.zip($|[?&#])/i' );
 }

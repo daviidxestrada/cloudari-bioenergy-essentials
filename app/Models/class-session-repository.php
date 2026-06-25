@@ -37,6 +37,11 @@ final class Cloudari_BioEnergy_Model_Session_Repository {
     }
 
     public static function refresh_current_session() {
+        if (self::wp_admin_has_member_access()) {
+            self::$current_member = self::admin_member();
+            return;
+        }
+
         $token = self::cookie_token();
         if (!$token) {
             return;
@@ -55,6 +60,11 @@ final class Cloudari_BioEnergy_Model_Session_Repository {
     }
 
     public static function current_member() {
+        if (self::wp_admin_has_member_access()) {
+            self::$current_member = self::admin_member();
+            return self::$current_member;
+        }
+
         if (false !== self::$current_member) {
             return self::$current_member;
         }
@@ -106,6 +116,20 @@ final class Cloudari_BioEnergy_Model_Session_Repository {
         return isset($_COOKIE[Cloudari_BioEnergy_Model_Settings::COOKIE_NAME])
             ? sanitize_text_field(wp_unslash((string) $_COOKIE[Cloudari_BioEnergy_Model_Settings::COOKIE_NAME]))
             : '';
+    }
+
+    private static function wp_admin_has_member_access() {
+        return is_user_logged_in() && current_user_can('manage_options');
+    }
+
+    private static function admin_member() {
+        return array(
+            'username' => 'admin',
+            'role' => 'Admin',
+            'source' => 'wp_admin',
+            'created_at' => time(),
+            'expires_at' => time() + Cloudari_BioEnergy_Model_Settings::SESSION_TTL,
+        );
     }
 
     private static function random_token() {

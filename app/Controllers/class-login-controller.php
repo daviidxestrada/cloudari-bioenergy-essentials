@@ -21,6 +21,7 @@ final class Cloudari_BioEnergy_Controller_Login {
             return Cloudari_BioEnergy_Core_View::render(
                 'public/signed-in.php',
                 array(
+                    'username' => Cloudari_BioEnergy_Model_Member_Repository::current_username(),
                     'logout_url' => wp_nonce_url(
                         add_query_arg('cloudari_bioenergy_logout', '1', Cloudari_BioEnergy_Model_Session_Repository::login_url()),
                         'cloudari_bioenergy_logout'
