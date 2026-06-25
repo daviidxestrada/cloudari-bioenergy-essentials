@@ -43,6 +43,8 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
 
         $data = self::data();
         $saved = isset($_GET['cloudari_contact_saved']);
+        $active_tab = isset($_GET['cloudari_contact_tab']) ? sanitize_key(wp_unslash($_GET['cloudari_contact_tab'])) : 'widget1';
+        $active_tab = in_array($active_tab, array('widget1', 'widget2', 'widget3'), true) ? $active_tab : 'widget1';
         ?>
         <div class="wrap cloudari-contact-admin">
             <div class="cloudari-contact-admin__header">
@@ -62,18 +64,19 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <?php wp_nonce_field('cloudari_bioenergy_contact_save'); ?>
                 <input type="hidden" name="action" value="cloudari_bioenergy_contact_save">
+                <input type="hidden" name="cloudari_contact_tab" value="<?php echo esc_attr($active_tab); ?>" data-cloudari-active-tab>
 
                 <div class="cloudari-contact-workspace">
                     <div class="cloudari-contact-editor">
                         <div class="cloudari-contact-tabs" role="tablist" aria-label="Elegir widget">
-                            <button class="button button-primary" type="button" data-cloudari-tab="widget1">Widget 1</button>
-                            <button class="button" type="button" data-cloudari-tab="widget2">Widget 2</button>
-                            <button class="button" type="button" data-cloudari-tab="widget3">Widget 3</button>
+                            <button class="button <?php echo 'widget1' === $active_tab ? 'button-primary' : ''; ?>" type="button" data-cloudari-tab="widget1">Widget 1</button>
+                            <button class="button <?php echo 'widget2' === $active_tab ? 'button-primary' : ''; ?>" type="button" data-cloudari-tab="widget2">Widget 2</button>
+                            <button class="button <?php echo 'widget3' === $active_tab ? 'button-primary' : ''; ?>" type="button" data-cloudari-tab="widget3">Widget 3</button>
                         </div>
 
-                        <section class="cloudari-contact-panel is-active" data-cloudari-panel="widget1">
+                        <section class="cloudari-contact-panel <?php echo 'widget1' === $active_tab ? 'is-active' : ''; ?>" data-cloudari-panel="widget1">
                             <div class="cloudari-contact-panel__title">
-                                <span>Widget 1</span>
+                                <span>Widget 1 <em class="cloudari-contact-unsaved" data-cloudari-unsaved>Sin guardar cambios</em></span>
                                 <code>[eera_contact_widget_1]</code>
                             </div>
                             <p>
@@ -84,9 +87,9 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                             <?php self::render_rich_editor('Contenido', 'contact[widget1][content]', $data['widget1']['content'], 'cloudari_contact_widget1_content'); ?>
                         </section>
 
-                        <section class="cloudari-contact-panel" data-cloudari-panel="widget2">
+                        <section class="cloudari-contact-panel <?php echo 'widget2' === $active_tab ? 'is-active' : ''; ?>" data-cloudari-panel="widget2">
                             <div class="cloudari-contact-panel__title">
-                                <span>Widget 2</span>
+                                <span>Widget 2 <em class="cloudari-contact-unsaved" data-cloudari-unsaved>Sin guardar cambios</em></span>
                                 <code>[eera_contact_widget_2]</code>
                             </div>
                             <?php foreach ($data['widget2']['cards'] as $index => $card) : ?>
@@ -102,9 +105,9 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                             <?php endforeach; ?>
                         </section>
 
-                        <section class="cloudari-contact-panel" data-cloudari-panel="widget3">
+                        <section class="cloudari-contact-panel <?php echo 'widget3' === $active_tab ? 'is-active' : ''; ?>" data-cloudari-panel="widget3">
                             <div class="cloudari-contact-panel__title">
-                                <span>Widget 3</span>
+                                <span>Widget 3 <em class="cloudari-contact-unsaved" data-cloudari-unsaved>Sin guardar cambios</em></span>
                                 <code>[eera_contact_widget_3]</code>
                             </div>
                             <?php foreach ($data['widget3']['cards'] as $index => $card) : ?>
@@ -129,15 +132,15 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                     <aside class="cloudari-contact-preview" aria-label="Vista previa del widget">
                         <div class="cloudari-contact-preview__bar">
                             <strong>Vista previa</strong>
-                            <span data-cloudari-preview-label>Widget 1</span>
+                            <span data-cloudari-preview-label><?php echo esc_html(str_replace('widget', 'Widget ', $active_tab)); ?></span>
                         </div>
-                        <div class="cloudari-contact-preview__frame is-active" data-cloudari-preview="widget1">
+                        <div class="cloudari-contact-preview__frame <?php echo 'widget1' === $active_tab ? 'is-active' : ''; ?>" data-cloudari-preview="widget1">
                             <?php echo self::render_widget_1(); ?>
                         </div>
-                        <div class="cloudari-contact-preview__frame" data-cloudari-preview="widget2">
+                        <div class="cloudari-contact-preview__frame <?php echo 'widget2' === $active_tab ? 'is-active' : ''; ?>" data-cloudari-preview="widget2">
                             <?php echo self::render_widget_2(); ?>
                         </div>
-                        <div class="cloudari-contact-preview__frame" data-cloudari-preview="widget3">
+                        <div class="cloudari-contact-preview__frame <?php echo 'widget3' === $active_tab ? 'is-active' : ''; ?>" data-cloudari-preview="widget3">
                             <?php echo self::render_widget_3(); ?>
                         </div>
                     </aside>
@@ -158,6 +161,8 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
             .cloudari-contact-panel { background: #fff; border: 1px solid var(--cloudari-line); display: none; margin: 0; padding: 16px 18px 18px; }
             .cloudari-contact-panel.is-active { display: block; }
             .cloudari-contact-panel__title { align-items: center; border-bottom: 1px solid #edf0f2; display: flex; font-size: 15px; font-weight: 600; justify-content: space-between; margin: 0 0 16px; padding: 0 0 12px; }
+            .cloudari-contact-unsaved { color: #b32d2e; display: none; font-size: 12px; font-style: normal; font-weight: 600; margin-left: 8px; }
+            .cloudari-contact-admin.has-unsaved-changes .cloudari-contact-panel.is-active [data-cloudari-unsaved] { display: inline; }
             .cloudari-contact-card-editor { border: 1px solid #e2e6ea; margin: 0 0 10px; padding: 0; }
             .cloudari-contact-card-editor summary { background: var(--cloudari-soft); color: #1d2327; cursor: pointer; font-weight: 600; padding: 12px 14px; }
             .cloudari-contact-card-editor p, .cloudari-contact-rich-editor, .cloudari-contact-repeatable { margin-left: 14px; margin-right: 14px; }
@@ -187,6 +192,10 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                 var panels = Array.prototype.slice.call(document.querySelectorAll('[data-cloudari-panel]'));
                 var previews = Array.prototype.slice.call(document.querySelectorAll('[data-cloudari-preview]'));
                 var previewLabel = document.querySelector('[data-cloudari-preview-label]');
+                var activeTabField = document.querySelector('[data-cloudari-active-tab]');
+                var admin = document.querySelector('.cloudari-contact-admin');
+                var hasUnsavedChanges = false;
+                var syncQueued = false;
 
                 function byName(name) {
                     return form ? form.querySelector('[name="' + name + '"]') : null;
@@ -207,6 +216,9 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                 }
 
                 function setActive(widget) {
+                    if (activeTabField) {
+                        activeTabField.value = widget;
+                    }
                     tabs.forEach(function (tab) {
                         tab.classList.toggle('button-primary', tab.dataset.cloudariTab === widget);
                     });
@@ -218,6 +230,13 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                     });
                     if (previewLabel) {
                         previewLabel.textContent = widget.replace('widget', 'Widget ');
+                    }
+                }
+
+                function setDirty() {
+                    hasUnsavedChanges = true;
+                    if (admin) {
+                        admin.classList.add('has-unsaved-changes');
                     }
                 }
 
@@ -275,6 +294,47 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                     syncWidget3();
                 }
 
+                function queueSync(markDirty) {
+                    if (markDirty) {
+                        setDirty();
+                    }
+                    if (syncQueued) {
+                        return;
+                    }
+                    syncQueued = true;
+                    window.requestAnimationFrame(function () {
+                        syncQueued = false;
+                        syncPreview();
+                    });
+                }
+
+                function bindEditor(editor) {
+                    if (!editor || editor.cloudariContactBound) {
+                        return;
+                    }
+                    editor.cloudariContactBound = true;
+                    editor.on('keyup change input undo redo SetContent ExecCommand Paste NodeChange', function () {
+                        queueSync(true);
+                    });
+                    editor.on('init', function () {
+                        queueSync(false);
+                    });
+                }
+
+                function bindExistingEditors() {
+                    if (!window.tinymce) {
+                        return;
+                    }
+                    var editors = window.tinymce.editors || [];
+                    if (typeof editors.forEach === 'function') {
+                        editors.forEach(bindEditor);
+                    } else {
+                        Object.keys(editors).forEach(function (key) {
+                            bindEditor(editors[key]);
+                        });
+                    }
+                }
+
                 tabs.forEach(function (tab) {
                     tab.addEventListener('click', function () {
                         setActive(tab.dataset.cloudariTab);
@@ -282,21 +342,33 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                 });
 
                 if (form) {
-                    form.addEventListener('input', syncPreview);
-                    form.addEventListener('change', syncPreview);
+                    form.addEventListener('input', function () {
+                        queueSync(true);
+                    });
+                    form.addEventListener('change', function () {
+                        queueSync(true);
+                    });
                     form.addEventListener('submit', function () {
                         if (window.tinymce) {
                             window.tinymce.triggerSave();
+                        }
+                        hasUnsavedChanges = false;
+                        if (admin) {
+                            admin.classList.remove('has-unsaved-changes');
                         }
                     });
                 }
 
                 if (window.tinymce) {
                     window.tinymce.on('AddEditor', function (event) {
-                        event.editor.on('keyup change input undo redo setcontent', syncPreview);
+                        bindEditor(event.editor);
                     });
+                    bindExistingEditors();
+                    window.setTimeout(bindExistingEditors, 500);
+                    window.setTimeout(bindExistingEditors, 1500);
                 }
 
+                setActive(activeTabField && activeTabField.value ? activeTabField.value : 'widget1');
                 syncPreview();
             }());
         </script>
@@ -313,7 +385,16 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
         $raw = isset($_POST['contact']) && is_array($_POST['contact']) ? wp_unslash($_POST['contact']) : array();
         update_option(self::OPTION_NAME, self::sanitize_data($raw), false);
 
-        wp_safe_redirect(add_query_arg('cloudari_contact_saved', '1', admin_url('admin.php?page=cloudari-bioenergy-contact-data')));
+        $active_tab = isset($_POST['cloudari_contact_tab']) ? sanitize_key(wp_unslash($_POST['cloudari_contact_tab'])) : 'widget1';
+        $active_tab = in_array($active_tab, array('widget1', 'widget2', 'widget3'), true) ? $active_tab : 'widget1';
+
+        wp_safe_redirect(add_query_arg(
+            array(
+                'cloudari_contact_saved' => '1',
+                'cloudari_contact_tab' => $active_tab,
+            ),
+            admin_url('admin.php?page=cloudari-bioenergy-contact-data')
+        ));
         exit;
     }
 

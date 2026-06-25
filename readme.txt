@@ -4,7 +4,7 @@ Tags: members, access control, eera bioenergy
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.4.17
+Stable tag: 1.4.18
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,6 +15,11 @@ Adds isolated bcrypt login and members-area access control for the EERA Bioenerg
 Cloudari BioEnergy Essentials provides private member login, protected page access, member menu handling, and recovered publication redirects for the EERA Bioenergy site.
 
 == Changelog ==
+
+= 1.4.18 =
+* Update contact previews live while editing rich text fields.
+* Show an unsaved changes warning on the active contact widget editor.
+* Keep the selected contact widget tab active after saving.
 
 = 1.4.17 =
 * Load the WordPress editor assets from the Datos Contacto admin hook.
