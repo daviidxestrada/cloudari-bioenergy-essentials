@@ -9,6 +9,7 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
 
     public static function register() {
         add_action('admin_menu', array(__CLASS__, 'register_menu'));
+        add_action('admin_enqueue_scripts', array(__CLASS__, 'enqueue_admin_assets'));
         add_action('admin_post_cloudari_bioenergy_contact_save', array(__CLASS__, 'save'));
         add_shortcode('eera_contact_widget_1', array(__CLASS__, 'render_widget_1'));
         add_shortcode('eera_contact_widget_2', array(__CLASS__, 'render_widget_2'));
@@ -27,12 +28,18 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
         );
     }
 
-    public static function render_admin_page() {
-        if (!current_user_can('manage_options')) {
+    public static function enqueue_admin_assets($hook_suffix) {
+        if ('toplevel_page_cloudari-bioenergy-contact-data' !== $hook_suffix) {
             return;
         }
 
         wp_enqueue_editor();
+    }
+
+    public static function render_admin_page() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
 
         $data = self::data();
         $saved = isset($_GET['cloudari_contact_saved']);
