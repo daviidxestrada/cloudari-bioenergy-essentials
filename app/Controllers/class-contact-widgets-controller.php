@@ -36,82 +36,327 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
         $saved = isset($_GET['cloudari_contact_saved']);
         ?>
         <div class="wrap cloudari-contact-admin">
-            <h1>Datos Contacto</h1>
+            <div class="cloudari-contact-admin__header">
+                <div>
+                    <h1>Datos Contacto</h1>
+                    <p>Edita los datos y revisa el resultado en directo antes de guardar.</p>
+                </div>
+                <div class="cloudari-contact-shortcodes" aria-label="Shortcodes disponibles">
+                    <code>[eera_contact_widget_1]</code>
+                    <code>[eera_contact_widget_2]</code>
+                    <code>[eera_contact_widget_3]</code>
+                </div>
+            </div>
             <?php if ($saved) : ?>
                 <div class="notice notice-success is-dismissible"><p>Datos guardados.</p></div>
             <?php endif; ?>
-            <p>Shortcodes disponibles: <code>[eera_contact_widget_1]</code>, <code>[eera_contact_widget_2]</code>, <code>[eera_contact_widget_3]</code>.</p>
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <?php wp_nonce_field('cloudari_bioenergy_contact_save'); ?>
                 <input type="hidden" name="action" value="cloudari_bioenergy_contact_save">
 
-                <h2>Widget 1 - Joint Programme Coordinator</h2>
-                <div class="cloudari-contact-panel">
-                    <p>
-                        <label>Titulo<br>
-                            <input class="regular-text" type="text" name="contact[widget1][title]" value="<?php echo esc_attr($data['widget1']['title']); ?>">
-                        </label>
-                    </p>
-                    <?php self::render_repeatable_admin('Emails', 'contact[widget1][emails]', $data['widget1']['emails'], 'email'); ?>
-                </div>
+                <div class="cloudari-contact-workspace">
+                    <div class="cloudari-contact-editor">
+                        <div class="cloudari-contact-tabs" role="tablist" aria-label="Elegir widget">
+                            <button class="button button-primary" type="button" data-cloudari-tab="widget1">Widget 1</button>
+                            <button class="button" type="button" data-cloudari-tab="widget2">Widget 2</button>
+                            <button class="button" type="button" data-cloudari-tab="widget3">Widget 3</button>
+                        </div>
 
-                <h2>Widget 2 - Subprogrammes Coordinators</h2>
-                <?php foreach ($data['widget2']['cards'] as $index => $card) : ?>
-                    <div class="cloudari-contact-panel">
-                        <h3>Card <?php echo esc_html((string) ($index + 1)); ?></h3>
-                        <p>
-                            <label>Titulo<br>
-                                <input class="large-text" type="text" name="contact[widget2][cards][<?php echo esc_attr((string) $index); ?>][title]" value="<?php echo esc_attr($card['title']); ?>">
-                            </label>
-                        </p>
-                        <p>
-                            <label>Nombre<br>
-                                <input class="large-text" type="text" name="contact[widget2][cards][<?php echo esc_attr((string) $index); ?>][name]" value="<?php echo esc_attr($card['name']); ?>">
-                            </label>
-                        </p>
-                        <p>
-                            <label>Organizacion<br>
-                                <input class="large-text" type="text" name="contact[widget2][cards][<?php echo esc_attr((string) $index); ?>][organization]" value="<?php echo esc_attr($card['organization']); ?>">
-                            </label>
-                        </p>
-                        <?php self::render_repeatable_admin('Emails', 'contact[widget2][cards][' . $index . '][emails]', $card['emails'], 'email'); ?>
-                    </div>
-                <?php endforeach; ?>
-
-                <h2>Widget 3 - Joint Programme Secretariat</h2>
-                <?php foreach ($data['widget3']['cards'] as $index => $card) : ?>
-                    <div class="cloudari-contact-panel">
-                        <h3>Card <?php echo esc_html((string) ($index + 1)); ?>: <?php echo esc_html($card['title']); ?></h3>
-                        <input type="hidden" name="contact[widget3][cards][<?php echo esc_attr((string) $index); ?>][type]" value="<?php echo esc_attr($card['type']); ?>">
-                        <p>
-                            <label>Titulo<br>
-                                <input class="large-text" type="text" name="contact[widget3][cards][<?php echo esc_attr((string) $index); ?>][title]" value="<?php echo esc_attr($card['title']); ?>">
-                            </label>
-                        </p>
-                        <?php if ('email' === $card['type']) : ?>
-                            <?php self::render_repeatable_admin('Emails', 'contact[widget3][cards][' . $index . '][emails]', $card['emails'], 'email'); ?>
-                        <?php elseif ('phone' === $card['type']) : ?>
-                            <?php self::render_repeatable_admin('Telefonos', 'contact[widget3][cards][' . $index . '][phones]', $card['phones'], 'text'); ?>
-                        <?php else : ?>
+                        <section class="cloudari-contact-panel is-active" data-cloudari-panel="widget1">
+                            <div class="cloudari-contact-panel__title">
+                                <span>Widget 1</span>
+                                <code>[eera_contact_widget_1]</code>
+                            </div>
                             <p>
-                                <label>Lineas de direccion<br>
-                                    <textarea class="large-text" rows="4" name="contact[widget3][cards][<?php echo esc_attr((string) $index); ?>][lines]"><?php echo esc_textarea(implode("\n", $card['lines'])); ?></textarea>
+                                <label>Titulo<br>
+                                    <input class="large-text" type="text" name="contact[widget1][title]" value="<?php echo esc_attr($data['widget1']['title']); ?>">
                                 </label>
                             </p>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
+                            <?php self::render_repeatable_admin('Emails', 'contact[widget1][emails]', $data['widget1']['emails'], 'email'); ?>
+                        </section>
 
-                <?php submit_button('Guardar datos contacto'); ?>
+                        <section class="cloudari-contact-panel" data-cloudari-panel="widget2">
+                            <div class="cloudari-contact-panel__title">
+                                <span>Widget 2</span>
+                                <code>[eera_contact_widget_2]</code>
+                            </div>
+                            <?php foreach ($data['widget2']['cards'] as $index => $card) : ?>
+                                <details class="cloudari-contact-card-editor" <?php echo 0 === $index ? 'open' : ''; ?>>
+                                    <summary>Card <?php echo esc_html((string) ($index + 1)); ?>: <?php echo esc_html($card['title']); ?></summary>
+                                    <p>
+                                        <label>Titulo<br>
+                                            <input class="large-text" type="text" name="contact[widget2][cards][<?php echo esc_attr((string) $index); ?>][title]" value="<?php echo esc_attr($card['title']); ?>">
+                                        </label>
+                                    </p>
+                                    <p>
+                                        <label>Nombre<br>
+                                            <input class="large-text" type="text" name="contact[widget2][cards][<?php echo esc_attr((string) $index); ?>][name]" value="<?php echo esc_attr($card['name']); ?>">
+                                        </label>
+                                    </p>
+                                    <p>
+                                        <label>Organizacion<br>
+                                            <input class="large-text" type="text" name="contact[widget2][cards][<?php echo esc_attr((string) $index); ?>][organization]" value="<?php echo esc_attr($card['organization']); ?>">
+                                        </label>
+                                    </p>
+                                    <?php self::render_repeatable_admin('Emails', 'contact[widget2][cards][' . $index . '][emails]', $card['emails'], 'email'); ?>
+                                </details>
+                            <?php endforeach; ?>
+                        </section>
+
+                        <section class="cloudari-contact-panel" data-cloudari-panel="widget3">
+                            <div class="cloudari-contact-panel__title">
+                                <span>Widget 3</span>
+                                <code>[eera_contact_widget_3]</code>
+                            </div>
+                            <?php foreach ($data['widget3']['cards'] as $index => $card) : ?>
+                                <details class="cloudari-contact-card-editor" <?php echo 0 === $index ? 'open' : ''; ?>>
+                                    <summary>Card <?php echo esc_html((string) ($index + 1)); ?>: <?php echo esc_html($card['title']); ?></summary>
+                                    <input type="hidden" name="contact[widget3][cards][<?php echo esc_attr((string) $index); ?>][type]" value="<?php echo esc_attr($card['type']); ?>">
+                                    <p>
+                                        <label>Titulo<br>
+                                            <input class="large-text" type="text" name="contact[widget3][cards][<?php echo esc_attr((string) $index); ?>][title]" value="<?php echo esc_attr($card['title']); ?>">
+                                        </label>
+                                    </p>
+                                    <?php if ('email' === $card['type']) : ?>
+                                        <?php self::render_repeatable_admin('Emails', 'contact[widget3][cards][' . $index . '][emails]', $card['emails'], 'email'); ?>
+                                    <?php elseif ('phone' === $card['type']) : ?>
+                                        <?php self::render_repeatable_admin('Telefonos', 'contact[widget3][cards][' . $index . '][phones]', $card['phones'], 'text'); ?>
+                                    <?php else : ?>
+                                        <p>
+                                            <label>Lineas de direccion<br>
+                                                <textarea class="large-text" rows="4" name="contact[widget3][cards][<?php echo esc_attr((string) $index); ?>][lines]"><?php echo esc_textarea(implode("\n", $card['lines'])); ?></textarea>
+                                            </label>
+                                        </p>
+                                    <?php endif; ?>
+                                </details>
+                            <?php endforeach; ?>
+                        </section>
+
+                        <div class="cloudari-contact-actions">
+                            <?php submit_button('Guardar datos contacto', 'primary', 'submit', false); ?>
+                        </div>
+                    </div>
+
+                    <aside class="cloudari-contact-preview" aria-label="Vista previa del widget">
+                        <div class="cloudari-contact-preview__bar">
+                            <strong>Vista previa</strong>
+                            <span data-cloudari-preview-label>Widget 1</span>
+                        </div>
+                        <div class="cloudari-contact-preview__frame is-active" data-cloudari-preview="widget1">
+                            <?php echo self::render_widget_1(); ?>
+                        </div>
+                        <div class="cloudari-contact-preview__frame" data-cloudari-preview="widget2">
+                            <?php echo self::render_widget_2(); ?>
+                        </div>
+                        <div class="cloudari-contact-preview__frame" data-cloudari-preview="widget3">
+                            <?php echo self::render_widget_3(); ?>
+                        </div>
+                    </aside>
+                </div>
             </form>
         </div>
         <style>
-            .cloudari-contact-panel { background: #fff; border: 1px solid #dcdcde; margin: 16px 0; max-width: 980px; padding: 16px 18px; }
-            .cloudari-contact-repeatable__row { align-items: center; display: flex; gap: 8px; margin: 0 0 8px; }
-            .cloudari-contact-repeatable__row input { max-width: 520px; width: 100%; }
+            .cloudari-contact-admin { --cloudari-blue: #1c5986; --cloudari-green: #bed431; --cloudari-line: #dcdcde; --cloudari-soft: #f6f8f4; }
+            .cloudari-contact-admin__header { align-items: flex-start; display: flex; gap: 18px; justify-content: space-between; margin: 18px 0 16px; max-width: 1320px; }
+            .cloudari-contact-admin__header h1 { margin-bottom: 4px; }
+            .cloudari-contact-admin__header p { color: #646970; margin: 0; }
+            .cloudari-contact-shortcodes { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; max-width: 560px; padding-top: 8px; }
+            .cloudari-contact-shortcodes code, .cloudari-contact-panel__title code { background: #eef4e7; border: 1px solid #d9e7ca; color: #24445f; }
+            .cloudari-contact-workspace { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(360px, 470px) minmax(0, 1fr); max-width: 1320px; }
+            .cloudari-contact-editor, .cloudari-contact-preview { min-width: 0; }
+            .cloudari-contact-tabs { background: #fff; border: 1px solid var(--cloudari-line); display: flex; gap: 8px; margin: 0 0 12px; padding: 10px; position: sticky; top: 32px; z-index: 5; }
+            .cloudari-contact-tabs .button { flex: 1; justify-content: center; min-height: 34px; }
+            .cloudari-contact-panel { background: #fff; border: 1px solid var(--cloudari-line); display: none; margin: 0; padding: 16px 18px 18px; }
+            .cloudari-contact-panel.is-active { display: block; }
+            .cloudari-contact-panel__title { align-items: center; border-bottom: 1px solid #edf0f2; display: flex; font-size: 15px; font-weight: 600; justify-content: space-between; margin: 0 0 16px; padding: 0 0 12px; }
+            .cloudari-contact-card-editor { border: 1px solid #e2e6ea; margin: 0 0 10px; padding: 0; }
+            .cloudari-contact-card-editor summary { background: var(--cloudari-soft); color: #1d2327; cursor: pointer; font-weight: 600; padding: 12px 14px; }
+            .cloudari-contact-card-editor p, .cloudari-contact-repeatable { margin-left: 14px; margin-right: 14px; }
+            .cloudari-contact-repeatable__row { align-items: center; display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) auto; margin: 0 0 8px; }
+            .cloudari-contact-repeatable__row input { width: 100%; }
+            .cloudari-contact-actions { background: #fff; border: 1px solid var(--cloudari-line); border-top: 0; padding: 14px 18px; }
+            .cloudari-contact-preview { background: #fff; border: 1px solid var(--cloudari-line); position: sticky; top: 32px; }
+            .cloudari-contact-preview__bar { align-items: center; border-bottom: 1px solid var(--cloudari-line); display: flex; justify-content: space-between; padding: 12px 14px; }
+            .cloudari-contact-preview__bar span { color: #646970; font-size: 12px; text-transform: uppercase; }
+            .cloudari-contact-preview__frame { display: none; overflow: auto; padding: 24px; }
+            .cloudari-contact-preview__frame.is-active { display: block; }
+            .cloudari-contact-preview__frame .eera-contact-card-widget { padding-top: 34px !important; }
+            .cloudari-contact-preview__frame .eera-subprogrammes-widget, .cloudari-contact-preview__frame .eera-jp-secretariat-widget { padding: 34px 24px 32px !important; }
+            .cloudari-contact-preview__frame .eera-subprogrammes-widget__grid, .cloudari-contact-preview__frame .eera-jp-secretariat-widget__grid { gap: 58px 18px !important; }
+            .cloudari-contact-preview__frame .eera-subprogrammes-widget__grid--two { margin-top: 58px !important; }
+            @media (max-width: 1180px) { .cloudari-contact-workspace { grid-template-columns: 1fr; } .cloudari-contact-tabs, .cloudari-contact-preview { position: static; } }
+            @media (max-width: 782px) { .cloudari-contact-admin__header { display: block; } .cloudari-contact-shortcodes { justify-content: flex-start; } .cloudari-contact-repeatable__row { grid-template-columns: 1fr; } }
         </style>
         <script>
             (function () {
+                var form = document.querySelector('.cloudari-contact-admin form');
+                var tabs = Array.prototype.slice.call(document.querySelectorAll('[data-cloudari-tab]'));
+                var panels = Array.prototype.slice.call(document.querySelectorAll('[data-cloudari-panel]'));
+                var previews = Array.prototype.slice.call(document.querySelectorAll('[data-cloudari-preview]'));
+                var previewLabel = document.querySelector('[data-cloudari-preview-label]');
+
+                function byName(name) {
+                    return form ? form.querySelector('[name="' + name + '"]') : null;
+                }
+
+                function repeatableValues(name) {
+                    return Array.prototype.slice.call(form.querySelectorAll('[name="' + name + '[]"]'))
+                        .map(function (input) { return input.value.trim(); })
+                        .filter(Boolean);
+                }
+
+                function clear(node) {
+                    while (node && node.firstChild) {
+                        node.removeChild(node.firstChild);
+                    }
+                }
+
+                function appendBreak(node) {
+                    node.appendChild(document.createElement('br'));
+                }
+
+                function appendTextLine(node, text) {
+                    node.appendChild(document.createTextNode(text));
+                    appendBreak(node);
+                }
+
+                function appendLinkLine(node, href, text, className) {
+                    var link = document.createElement('a');
+                    link.className = className;
+                    link.href = href;
+                    link.textContent = text;
+                    node.appendChild(link);
+                    appendBreak(node);
+                }
+
+                function trimTrailingBreak(node) {
+                    if (node && node.lastChild && node.lastChild.nodeName === 'BR') {
+                        node.removeChild(node.lastChild);
+                    }
+                }
+
+                function setActive(widget) {
+                    tabs.forEach(function (tab) {
+                        tab.classList.toggle('button-primary', tab.dataset.cloudariTab === widget);
+                    });
+                    panels.forEach(function (panel) {
+                        panel.classList.toggle('is-active', panel.dataset.cloudariPanel === widget);
+                    });
+                    previews.forEach(function (preview) {
+                        preview.classList.toggle('is-active', preview.dataset.cloudariPreview === widget);
+                    });
+                    if (previewLabel) {
+                        previewLabel.textContent = widget.replace('widget', 'Widget ');
+                    }
+                }
+
+                function syncWidget1() {
+                    var preview = document.querySelector('[data-cloudari-preview="widget1"]');
+                    var title = byName('contact[widget1][title]');
+                    var titleNode = preview && preview.querySelector('.eera-contact-card-widget__title');
+                    var details = preview && preview.querySelector('.eera-contact-card-widget__details');
+                    if (titleNode && title) {
+                        titleNode.textContent = title.value;
+                    }
+                    if (details) {
+                        clear(details);
+                        repeatableValues('contact[widget1][emails]').forEach(function (email) {
+                            appendLinkLine(details, 'mailto:' + email, email, 'eera-contact-card-widget__link');
+                        });
+                        trimTrailingBreak(details);
+                    }
+                }
+
+                function syncWidget2() {
+                    var preview = document.querySelector('[data-cloudari-preview="widget2"]');
+                    var cards = preview ? Array.prototype.slice.call(preview.querySelectorAll('.eera-subprogrammes-widget__card')) : [];
+                    cards.forEach(function (card, index) {
+                        var title = byName('contact[widget2][cards][' + index + '][title]');
+                        var name = byName('contact[widget2][cards][' + index + '][name]');
+                        var org = byName('contact[widget2][cards][' + index + '][organization]');
+                        var titleNode = card.querySelector('.eera-subprogrammes-widget__card-title');
+                        var details = card.querySelector('.eera-subprogrammes-widget__details');
+                        if (titleNode && title) {
+                            titleNode.textContent = title.value;
+                        }
+                        if (details) {
+                            clear(details);
+                            if (name && name.value.trim()) {
+                                appendTextLine(details, name.value.trim());
+                            }
+                            if (org && org.value.trim()) {
+                                appendTextLine(details, org.value.trim());
+                            }
+                            repeatableValues('contact[widget2][cards][' + index + '][emails]').forEach(function (email) {
+                                appendLinkLine(details, 'mailto:' + email, email, 'eera-subprogrammes-widget__link');
+                            });
+                            trimTrailingBreak(details);
+                        }
+                    });
+                }
+
+                function syncWidget3() {
+                    var preview = document.querySelector('[data-cloudari-preview="widget3"]');
+                    var cards = preview ? Array.prototype.slice.call(preview.querySelectorAll('.eera-jp-secretariat-widget__card')) : [];
+                    cards.forEach(function (card, index) {
+                        var title = byName('contact[widget3][cards][' + index + '][title]');
+                        var type = byName('contact[widget3][cards][' + index + '][type]');
+                        var titleNode = card.querySelector('.eera-jp-secretariat-widget__card-title');
+                        var details = card.querySelector('.eera-jp-secretariat-widget__details');
+                        var copy = card.querySelector('[data-copy-email]');
+                        var kind = type ? type.value : '';
+                        if (titleNode && title) {
+                            titleNode.textContent = title.value;
+                        }
+                        if (!details) {
+                            return;
+                        }
+                        clear(details);
+                        if ('email' === kind) {
+                            var emails = repeatableValues('contact[widget3][cards][' + index + '][emails]');
+                            emails.forEach(function (email) {
+                                appendLinkLine(details, 'mailto:' + email, email, 'eera-jp-secretariat-widget__link');
+                            });
+                            if (copy) {
+                                copy.dataset.copyEmail = emails.join(', ');
+                                copy.style.display = emails.length ? '' : 'none';
+                            }
+                        } else if ('phone' === kind) {
+                            repeatableValues('contact[widget3][cards][' + index + '][phones]').forEach(function (phone) {
+                                appendLinkLine(details, 'tel:' + phone.replace(/[^0-9+]/g, ''), phone, 'eera-jp-secretariat-widget__link');
+                            });
+                        } else {
+                            var textarea = byName('contact[widget3][cards][' + index + '][lines]');
+                            (textarea ? textarea.value.split(/\r\n|\r|\n/) : []).map(function (line) {
+                                return line.trim();
+                            }).filter(Boolean).forEach(function (line) {
+                                appendTextLine(details, line);
+                            });
+                        }
+                        trimTrailingBreak(details);
+                    });
+                }
+
+                function syncPreview() {
+                    if (!form) {
+                        return;
+                    }
+                    syncWidget1();
+                    syncWidget2();
+                    syncWidget3();
+                }
+
+                tabs.forEach(function (tab) {
+                    tab.addEventListener('click', function () {
+                        setActive(tab.dataset.cloudariTab);
+                    });
+                });
+
+                if (form) {
+                    form.addEventListener('input', syncPreview);
+                    form.addEventListener('change', syncPreview);
+                }
+
                 document.addEventListener('click', function (event) {
                     var add = event.target.closest('[data-cloudari-add-row]');
                     if (add) {
@@ -126,6 +371,7 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                         row.innerHTML = '<input type="' + wrap.dataset.type + '" name="' + wrap.dataset.name + '[]" value=""> <button type="button" class="button" data-cloudari-remove-row>Eliminar</button>';
                         items.appendChild(row);
                         row.querySelector('input').focus();
+                        syncPreview();
                     }
 
                     var remove = event.target.closest('[data-cloudari-remove-row]');
@@ -134,9 +380,12 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                         var rowToRemove = remove.closest('.cloudari-contact-repeatable__row');
                         if (rowToRemove) {
                             rowToRemove.remove();
+                            syncPreview();
                         }
                     }
                 });
+
+                syncPreview();
             }());
         </script>
         <?php
