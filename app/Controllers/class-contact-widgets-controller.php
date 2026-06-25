@@ -212,7 +212,27 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                             return editor.getContent();
                         }
                     }
+                    var iframe = field.id ? document.getElementById(field.id + '_ifr') : null;
+                    if (iframe && iframe.contentDocument && iframe.contentDocument.body) {
+                        return iframe.contentDocument.body.innerHTML;
+                    }
                     return field.value;
+                }
+
+                function syncVisualEditorsToTextareas() {
+                    Array.prototype.slice.call(document.querySelectorAll('.cloudari-contact-rich-editor textarea[id]')).forEach(function (field) {
+                        if (window.tinymce) {
+                            var editor = window.tinymce.get(field.id);
+                            if (editor && !editor.isHidden()) {
+                                field.value = editor.getContent();
+                                return;
+                            }
+                        }
+                        var iframe = document.getElementById(field.id + '_ifr');
+                        if (iframe && iframe.contentDocument && iframe.contentDocument.body) {
+                            field.value = iframe.contentDocument.body.innerHTML;
+                        }
+                    });
                 }
 
                 function setActive(widget) {
@@ -335,6 +355,20 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                     }
                 }
 
+                function bindEditorFrames() {
+                    Array.prototype.slice.call(document.querySelectorAll('.cloudari-contact-rich-editor iframe[id$="_ifr"]')).forEach(function (iframe) {
+                        if (iframe.cloudariContactBound || !iframe.contentDocument || !iframe.contentDocument.body) {
+                            return;
+                        }
+                        iframe.cloudariContactBound = true;
+                        ['input', 'keyup', 'change', 'paste'].forEach(function (eventName) {
+                            iframe.contentDocument.body.addEventListener(eventName, function () {
+                                queueSync(true);
+                            });
+                        });
+                    });
+                }
+
                 tabs.forEach(function (tab) {
                     tab.addEventListener('click', function () {
                         setActive(tab.dataset.cloudariTab);
@@ -352,6 +386,7 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                         if (window.tinymce) {
                             window.tinymce.triggerSave();
                         }
+                        syncVisualEditorsToTextareas();
                         hasUnsavedChanges = false;
                         if (admin) {
                             admin.classList.remove('has-unsaved-changes');
@@ -367,6 +402,9 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                     window.setTimeout(bindExistingEditors, 500);
                     window.setTimeout(bindExistingEditors, 1500);
                 }
+                bindEditorFrames();
+                window.setTimeout(bindEditorFrames, 500);
+                window.setTimeout(bindEditorFrames, 1500);
 
                 setActive(activeTabField && activeTabField.value ? activeTabField.value : 'widget1');
                 syncPreview();
