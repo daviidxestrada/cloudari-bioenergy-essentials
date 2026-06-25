@@ -32,6 +32,8 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
             return;
         }
 
+        wp_enqueue_editor();
+
         $data = self::data();
         $saved = isset($_GET['cloudari_contact_saved']);
         ?>
@@ -72,7 +74,7 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                                     <input class="large-text" type="text" name="contact[widget1][title]" value="<?php echo esc_attr($data['widget1']['title']); ?>">
                                 </label>
                             </p>
-                            <?php self::render_repeatable_admin('Emails', 'contact[widget1][emails]', $data['widget1']['emails'], 'email'); ?>
+                            <?php self::render_rich_editor('Contenido', 'contact[widget1][content]', $data['widget1']['content'], 'cloudari_contact_widget1_content'); ?>
                         </section>
 
                         <section class="cloudari-contact-panel" data-cloudari-panel="widget2">
@@ -88,17 +90,7 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                                             <input class="large-text" type="text" name="contact[widget2][cards][<?php echo esc_attr((string) $index); ?>][title]" value="<?php echo esc_attr($card['title']); ?>">
                                         </label>
                                     </p>
-                                    <p>
-                                        <label>Nombre<br>
-                                            <input class="large-text" type="text" name="contact[widget2][cards][<?php echo esc_attr((string) $index); ?>][name]" value="<?php echo esc_attr($card['name']); ?>">
-                                        </label>
-                                    </p>
-                                    <p>
-                                        <label>Organizacion<br>
-                                            <input class="large-text" type="text" name="contact[widget2][cards][<?php echo esc_attr((string) $index); ?>][organization]" value="<?php echo esc_attr($card['organization']); ?>">
-                                        </label>
-                                    </p>
-                                    <?php self::render_repeatable_admin('Emails', 'contact[widget2][cards][' . $index . '][emails]', $card['emails'], 'email'); ?>
+                                    <?php self::render_rich_editor('Contenido', 'contact[widget2][cards][' . $index . '][content]', $card['content'], 'cloudari_contact_widget2_card_' . $index); ?>
                                 </details>
                             <?php endforeach; ?>
                         </section>
@@ -117,17 +109,7 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                                             <input class="large-text" type="text" name="contact[widget3][cards][<?php echo esc_attr((string) $index); ?>][title]" value="<?php echo esc_attr($card['title']); ?>">
                                         </label>
                                     </p>
-                                    <?php if ('email' === $card['type']) : ?>
-                                        <?php self::render_repeatable_admin('Emails', 'contact[widget3][cards][' . $index . '][emails]', $card['emails'], 'email'); ?>
-                                    <?php elseif ('phone' === $card['type']) : ?>
-                                        <?php self::render_repeatable_admin('Telefonos', 'contact[widget3][cards][' . $index . '][phones]', $card['phones'], 'text'); ?>
-                                    <?php else : ?>
-                                        <p>
-                                            <label>Lineas de direccion<br>
-                                                <textarea class="large-text" rows="4" name="contact[widget3][cards][<?php echo esc_attr((string) $index); ?>][lines]"><?php echo esc_textarea(implode("\n", $card['lines'])); ?></textarea>
-                                            </label>
-                                        </p>
-                                    <?php endif; ?>
+                                    <?php self::render_rich_editor('Contenido', 'contact[widget3][cards][' . $index . '][content]', $card['content'], 'cloudari_contact_widget3_card_' . $index); ?>
                                 </details>
                             <?php endforeach; ?>
                         </section>
@@ -171,7 +153,11 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
             .cloudari-contact-panel__title { align-items: center; border-bottom: 1px solid #edf0f2; display: flex; font-size: 15px; font-weight: 600; justify-content: space-between; margin: 0 0 16px; padding: 0 0 12px; }
             .cloudari-contact-card-editor { border: 1px solid #e2e6ea; margin: 0 0 10px; padding: 0; }
             .cloudari-contact-card-editor summary { background: var(--cloudari-soft); color: #1d2327; cursor: pointer; font-weight: 600; padding: 12px 14px; }
-            .cloudari-contact-card-editor p, .cloudari-contact-repeatable { margin-left: 14px; margin-right: 14px; }
+            .cloudari-contact-card-editor p, .cloudari-contact-rich-editor, .cloudari-contact-repeatable { margin-left: 14px; margin-right: 14px; }
+            .cloudari-contact-rich-editor { margin-bottom: 16px; }
+            .cloudari-contact-rich-editor__label { color: #1d2327; display: block; font-weight: 600; margin: 14px 0 8px; }
+            .cloudari-contact-rich-editor .wp-editor-wrap { max-width: 100%; }
+            .cloudari-contact-rich-editor .wp-editor-area { min-height: 118px; }
             .cloudari-contact-repeatable__row { align-items: center; display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) auto; margin: 0 0 8px; }
             .cloudari-contact-repeatable__row input { width: 100%; }
             .cloudari-contact-actions { background: #fff; border: 1px solid var(--cloudari-line); border-top: 0; padding: 14px 18px; }
@@ -199,40 +185,18 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                     return form ? form.querySelector('[name="' + name + '"]') : null;
                 }
 
-                function repeatableValues(name) {
-                    return Array.prototype.slice.call(form.querySelectorAll('[name="' + name + '[]"]'))
-                        .map(function (input) { return input.value.trim(); })
-                        .filter(Boolean);
-                }
-
-                function clear(node) {
-                    while (node && node.firstChild) {
-                        node.removeChild(node.firstChild);
+                function editorContent(name) {
+                    var field = byName(name);
+                    if (!field) {
+                        return '';
                     }
-                }
-
-                function appendBreak(node) {
-                    node.appendChild(document.createElement('br'));
-                }
-
-                function appendTextLine(node, text) {
-                    node.appendChild(document.createTextNode(text));
-                    appendBreak(node);
-                }
-
-                function appendLinkLine(node, href, text, className) {
-                    var link = document.createElement('a');
-                    link.className = className;
-                    link.href = href;
-                    link.textContent = text;
-                    node.appendChild(link);
-                    appendBreak(node);
-                }
-
-                function trimTrailingBreak(node) {
-                    if (node && node.lastChild && node.lastChild.nodeName === 'BR') {
-                        node.removeChild(node.lastChild);
+                    if (window.tinymce) {
+                        var editor = window.tinymce.get(field.id);
+                        if (editor && !editor.isHidden()) {
+                            return editor.getContent();
+                        }
                     }
+                    return field.value;
                 }
 
                 function setActive(widget) {
@@ -259,11 +223,7 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                         titleNode.textContent = title.value;
                     }
                     if (details) {
-                        clear(details);
-                        repeatableValues('contact[widget1][emails]').forEach(function (email) {
-                            appendLinkLine(details, 'mailto:' + email, email, 'eera-contact-card-widget__link');
-                        });
-                        trimTrailingBreak(details);
+                        details.innerHTML = editorContent('contact[widget1][content]');
                     }
                 }
 
@@ -272,25 +232,13 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                     var cards = preview ? Array.prototype.slice.call(preview.querySelectorAll('.eera-subprogrammes-widget__card')) : [];
                     cards.forEach(function (card, index) {
                         var title = byName('contact[widget2][cards][' + index + '][title]');
-                        var name = byName('contact[widget2][cards][' + index + '][name]');
-                        var org = byName('contact[widget2][cards][' + index + '][organization]');
                         var titleNode = card.querySelector('.eera-subprogrammes-widget__card-title');
                         var details = card.querySelector('.eera-subprogrammes-widget__details');
                         if (titleNode && title) {
                             titleNode.textContent = title.value;
                         }
                         if (details) {
-                            clear(details);
-                            if (name && name.value.trim()) {
-                                appendTextLine(details, name.value.trim());
-                            }
-                            if (org && org.value.trim()) {
-                                appendTextLine(details, org.value.trim());
-                            }
-                            repeatableValues('contact[widget2][cards][' + index + '][emails]').forEach(function (email) {
-                                appendLinkLine(details, 'mailto:' + email, email, 'eera-subprogrammes-widget__link');
-                            });
-                            trimTrailingBreak(details);
+                            details.innerHTML = editorContent('contact[widget2][cards][' + index + '][content]');
                         }
                     });
                 }
@@ -300,40 +248,14 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                     var cards = preview ? Array.prototype.slice.call(preview.querySelectorAll('.eera-jp-secretariat-widget__card')) : [];
                     cards.forEach(function (card, index) {
                         var title = byName('contact[widget3][cards][' + index + '][title]');
-                        var type = byName('contact[widget3][cards][' + index + '][type]');
                         var titleNode = card.querySelector('.eera-jp-secretariat-widget__card-title');
                         var details = card.querySelector('.eera-jp-secretariat-widget__details');
-                        var copy = card.querySelector('[data-copy-email]');
-                        var kind = type ? type.value : '';
                         if (titleNode && title) {
                             titleNode.textContent = title.value;
                         }
-                        if (!details) {
-                            return;
+                        if (details) {
+                            details.innerHTML = editorContent('contact[widget3][cards][' + index + '][content]');
                         }
-                        clear(details);
-                        if ('email' === kind) {
-                            var emails = repeatableValues('contact[widget3][cards][' + index + '][emails]');
-                            emails.forEach(function (email) {
-                                appendLinkLine(details, 'mailto:' + email, email, 'eera-jp-secretariat-widget__link');
-                            });
-                            if (copy) {
-                                copy.dataset.copyEmail = emails.join(', ');
-                                copy.style.display = emails.length ? '' : 'none';
-                            }
-                        } else if ('phone' === kind) {
-                            repeatableValues('contact[widget3][cards][' + index + '][phones]').forEach(function (phone) {
-                                appendLinkLine(details, 'tel:' + phone.replace(/[^0-9+]/g, ''), phone, 'eera-jp-secretariat-widget__link');
-                            });
-                        } else {
-                            var textarea = byName('contact[widget3][cards][' + index + '][lines]');
-                            (textarea ? textarea.value.split(/\r\n|\r|\n/) : []).map(function (line) {
-                                return line.trim();
-                            }).filter(Boolean).forEach(function (line) {
-                                appendTextLine(details, line);
-                            });
-                        }
-                        trimTrailingBreak(details);
                     });
                 }
 
@@ -355,35 +277,18 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                 if (form) {
                     form.addEventListener('input', syncPreview);
                     form.addEventListener('change', syncPreview);
+                    form.addEventListener('submit', function () {
+                        if (window.tinymce) {
+                            window.tinymce.triggerSave();
+                        }
+                    });
                 }
 
-                document.addEventListener('click', function (event) {
-                    var add = event.target.closest('[data-cloudari-add-row]');
-                    if (add) {
-                        event.preventDefault();
-                        var wrap = add.closest('[data-cloudari-repeatable]');
-                        var items = wrap && wrap.querySelector('[data-cloudari-repeatable-items]');
-                        if (!items) {
-                            return;
-                        }
-                        var row = document.createElement('div');
-                        row.className = 'cloudari-contact-repeatable__row';
-                        row.innerHTML = '<input type="' + wrap.dataset.type + '" name="' + wrap.dataset.name + '[]" value=""> <button type="button" class="button" data-cloudari-remove-row>Eliminar</button>';
-                        items.appendChild(row);
-                        row.querySelector('input').focus();
-                        syncPreview();
-                    }
-
-                    var remove = event.target.closest('[data-cloudari-remove-row]');
-                    if (remove) {
-                        event.preventDefault();
-                        var rowToRemove = remove.closest('.cloudari-contact-repeatable__row');
-                        if (rowToRemove) {
-                            rowToRemove.remove();
-                            syncPreview();
-                        }
-                    }
-                });
+                if (window.tinymce) {
+                    window.tinymce.on('AddEditor', function (event) {
+                        event.editor.on('keyup change input undo redo setcontent', syncPreview);
+                    });
+                }
 
                 syncPreview();
             }());
@@ -416,7 +321,7 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
             <article class="eera-contact-card-widget__card">
                 <span class="eera-contact-card-widget__icon" aria-hidden="true"><?php echo self::icon_svg('email'); ?></span>
                 <h3 class="eera-contact-card-widget__title"><?php echo esc_html($card['title']); ?></h3>
-                <p class="eera-contact-card-widget__details"><?php echo self::email_links($card['emails'], 'eera-contact-card-widget__link'); ?></p>
+                <div class="eera-contact-card-widget__details"><?php echo self::render_rich_content($card['content']); ?></div>
             </article>
         </div>
         <?php
@@ -484,6 +389,31 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
         <?php
     }
 
+    private static function render_rich_editor($label, $name, $value, $editor_id) {
+        ?>
+        <div class="cloudari-contact-rich-editor">
+            <span class="cloudari-contact-rich-editor__label"><?php echo esc_html($label); ?></span>
+            <?php
+            wp_editor(
+                $value,
+                $editor_id,
+                array(
+                    'textarea_name' => $name,
+                    'textarea_rows' => 5,
+                    'media_buttons' => false,
+                    'teeny' => true,
+                    'quicktags' => true,
+                    'tinymce' => array(
+                        'toolbar1' => 'bold,italic,bullist,numlist,link,unlink,undo,redo',
+                        'toolbar2' => '',
+                    ),
+                )
+            );
+            ?>
+        </div>
+        <?php
+    }
+
     private static function data() {
         return self::merge_data(get_option(self::OPTION_NAME, array()));
     }
@@ -495,6 +425,20 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
         }
 
         $data = array_replace_recursive($defaults, $stored);
+        if (!isset($stored['widget1']['content'])) {
+            $data['widget1']['content'] = self::content_from_emails($data['widget1']['emails'] ?? array());
+        }
+        foreach ($defaults['widget2']['cards'] as $index => $card) {
+            if (!isset($stored['widget2']['cards'][$index]['content'])) {
+                $data['widget2']['cards'][$index]['content'] = self::content_from_subprogramme($data['widget2']['cards'][$index] ?? $card);
+            }
+        }
+        foreach ($defaults['widget3']['cards'] as $index => $card) {
+            if (!isset($stored['widget3']['cards'][$index]['content'])) {
+                $data['widget3']['cards'][$index]['content'] = self::content_from_secretariat($data['widget3']['cards'][$index] ?? $card);
+            }
+        }
+
         return self::sanitize_data($data);
     }
 
@@ -505,6 +449,7 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
         $data = $defaults;
         $data['widget1']['title'] = self::text($raw['widget1']['title'] ?? $defaults['widget1']['title']);
         $data['widget1']['emails'] = self::emails($raw['widget1']['emails'] ?? $defaults['widget1']['emails']);
+        $data['widget1']['content'] = self::rich_html($raw['widget1']['content'] ?? self::content_from_emails($data['widget1']['emails']));
 
         foreach ($defaults['widget2']['cards'] as $index => $card) {
             $raw_card = $raw['widget2']['cards'][$index] ?? array();
@@ -513,7 +458,9 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                 'name' => self::text($raw_card['name'] ?? $card['name']),
                 'organization' => self::text($raw_card['organization'] ?? $card['organization']),
                 'emails' => self::emails($raw_card['emails'] ?? $card['emails']),
+                'content' => '',
             );
+            $data['widget2']['cards'][$index]['content'] = self::rich_html($raw_card['content'] ?? self::content_from_subprogramme($data['widget2']['cards'][$index]));
         }
 
         foreach ($defaults['widget3']['cards'] as $index => $card) {
@@ -525,7 +472,9 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
                 'emails' => self::emails($raw_card['emails'] ?? $card['emails']),
                 'phones' => self::texts($raw_card['phones'] ?? $card['phones']),
                 'lines' => self::textarea_lines($raw_card['lines'] ?? $card['lines']),
+                'content' => '',
             );
+            $data['widget3']['cards'][$index]['content'] = self::rich_html($raw_card['content'] ?? self::content_from_secretariat($data['widget3']['cards'][$index]));
         }
 
         return $data;
@@ -536,21 +485,22 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
             'widget1' => array(
                 'title' => 'Joint Programme Coordinator',
                 'emails' => array('mchrist@cres.gr'),
+                'content' => '<p><a href="mailto:mchrist@cres.gr">mchrist@cres.gr</a></p>',
             ),
             'widget2' => array(
                 'cards' => array(
-                    array('title' => 'Subprogramme 1 (Sustainable biomass production)', 'name' => 'Dr. Wolter Elbersen', 'organization' => 'Wageningen, University & Research (WUR)', 'emails' => array('wolter.elbersen@wur.nl')),
-                    array('title' => 'Subprogramme 2 (Thermochemical platform)', 'name' => 'Berend Vreugdenhil', 'organization' => 'TNO', 'emails' => array('berend.vreugdenhil@tno.nl')),
-                    array('title' => 'Subprogramme 3 (Biochemical platform)', 'name' => 'Dr. Marcelo E. Domine', 'organization' => 'Institute of Chemical Technology - ITQ (UPV-CSIC)', 'emails' => array('mdomine@itq.upv.es')),
-                    array('title' => 'Subprogramme 4 (Stationary bioenergy)', 'name' => 'Berend Vreugdenhil', 'organization' => 'TNO', 'emails' => array('berend.vreugdenhil@tno.nl')),
-                    array('title' => 'Subprogramme 5 (Sustainability / Techno-Economic Analysis / Public Acceptance)', 'name' => 'Dr. Raquel S. Jorge', 'organization' => 'Norwegian University of Science and Technology (NTNU)', 'emails' => array('raquel.s.jorge@ntnu.no')),
+                    array('title' => 'Subprogramme 1 (Sustainable biomass production)', 'name' => 'Dr. Wolter Elbersen', 'organization' => 'Wageningen, University & Research (WUR)', 'emails' => array('wolter.elbersen@wur.nl'), 'content' => '<p>Dr. Wolter Elbersen<br>Wageningen, University &amp; Research (WUR)<br><a href="mailto:wolter.elbersen@wur.nl">wolter.elbersen@wur.nl</a></p>'),
+                    array('title' => 'Subprogramme 2 (Thermochemical platform)', 'name' => 'Berend Vreugdenhil', 'organization' => 'TNO', 'emails' => array('berend.vreugdenhil@tno.nl'), 'content' => '<p>Berend Vreugdenhil<br>TNO<br><a href="mailto:berend.vreugdenhil@tno.nl">berend.vreugdenhil@tno.nl</a></p>'),
+                    array('title' => 'Subprogramme 3 (Biochemical platform)', 'name' => 'Dr. Marcelo E. Domine', 'organization' => 'Institute of Chemical Technology - ITQ (UPV-CSIC)', 'emails' => array('mdomine@itq.upv.es'), 'content' => '<p>Dr. Marcelo E. Domine<br>Institute of Chemical Technology - ITQ (UPV-CSIC)<br><a href="mailto:mdomine@itq.upv.es">mdomine@itq.upv.es</a></p>'),
+                    array('title' => 'Subprogramme 4 (Stationary bioenergy)', 'name' => 'Berend Vreugdenhil', 'organization' => 'TNO', 'emails' => array('berend.vreugdenhil@tno.nl'), 'content' => '<p>Berend Vreugdenhil<br>TNO<br><a href="mailto:berend.vreugdenhil@tno.nl">berend.vreugdenhil@tno.nl</a></p>'),
+                    array('title' => 'Subprogramme 5 (Sustainability / Techno-Economic Analysis / Public Acceptance)', 'name' => 'Dr. Raquel S. Jorge', 'organization' => 'Norwegian University of Science and Technology (NTNU)', 'emails' => array('raquel.s.jorge@ntnu.no'), 'content' => '<p>Dr. Raquel S. Jorge<br>Norwegian University of Science and Technology (NTNU)<br><a href="mailto:raquel.s.jorge@ntnu.no">raquel.s.jorge@ntnu.no</a></p>'),
                 ),
             ),
             'widget3' => array(
                 'cards' => array(
-                    array('type' => 'email', 'title' => 'Email', 'emails' => array('margadegregorio@bioplat.org'), 'phones' => array(), 'lines' => array()),
-                    array('type' => 'phone', 'title' => 'Phone', 'emails' => array(), 'phones' => array('+34 629 485 629'), 'lines' => array()),
-                    array('type' => 'address', 'title' => 'Where', 'emails' => array(), 'phones' => array(), 'lines' => array('c/ Cedaceros 11 2C', '28014 Madrid, Spain')),
+                    array('type' => 'email', 'title' => 'Email', 'emails' => array('margadegregorio@bioplat.org'), 'phones' => array(), 'lines' => array(), 'content' => '<p><a href="mailto:margadegregorio@bioplat.org">margadegregorio@bioplat.org</a></p>'),
+                    array('type' => 'phone', 'title' => 'Phone', 'emails' => array(), 'phones' => array('+34 629 485 629'), 'lines' => array(), 'content' => '<p><a href="tel:+34629485629">+34 629 485 629</a></p>'),
+                    array('type' => 'address', 'title' => 'Where', 'emails' => array(), 'phones' => array(), 'lines' => array('c/ Cedaceros 11 2C', '28014 Madrid, Spain'), 'content' => '<p>c/ Cedaceros 11 2C<br>28014 Madrid, Spain</p>'),
                 ),
             ),
         );
@@ -562,11 +512,7 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
         <article class="eera-subprogrammes-widget__card">
             <span class="eera-subprogrammes-widget__icon" aria-hidden="true"><?php echo self::icon_svg('email'); ?></span>
             <h3 class="eera-subprogrammes-widget__card-title"><?php echo esc_html($card['title']); ?></h3>
-            <p class="eera-subprogrammes-widget__details">
-                <?php echo esc_html($card['name']); ?><br>
-                <?php echo esc_html($card['organization']); ?><br>
-                <?php echo self::email_links($card['emails'], 'eera-subprogrammes-widget__link'); ?>
-            </p>
+            <div class="eera-subprogrammes-widget__details"><?php echo self::render_rich_content($card['content']); ?></div>
         </article>
         <?php
         return (string) ob_get_clean();
@@ -578,7 +524,7 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
         <article class="eera-jp-secretariat-widget__card">
             <span class="eera-jp-secretariat-widget__icon" aria-hidden="true"><?php echo self::icon_svg($card['type']); ?></span>
             <h3 class="eera-jp-secretariat-widget__card-title"><?php echo esc_html($card['title']); ?></h3>
-            <p class="eera-jp-secretariat-widget__details"><?php echo self::secretariat_details($card); ?></p>
+            <div class="eera-jp-secretariat-widget__details"><?php echo self::secretariat_details($card); ?></div>
             <?php if ('email' === $card['type'] && !empty($card['emails'])) : ?>
                 <button class="eera-jp-secretariat-widget__copy" type="button" data-copy-email="<?php echo esc_attr(implode(', ', $card['emails'])); ?>">Copy email</button>
             <?php endif; ?>
@@ -588,6 +534,10 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
     }
 
     private static function secretariat_details(array $card) {
+        if (!empty($card['content'])) {
+            return self::render_rich_content($card['content']);
+        }
+
         if ('email' === $card['type']) {
             return self::email_links($card['emails'], 'eera-jp-secretariat-widget__link');
         }
@@ -602,6 +552,55 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
         }
 
         return implode('<br>', array_map('esc_html', $card['lines']));
+    }
+
+    private static function render_rich_content($content) {
+        return wp_kses_post(wpautop((string) $content));
+    }
+
+    private static function rich_html($content) {
+        return wp_kses_post((string) $content);
+    }
+
+    private static function content_from_subprogramme(array $card) {
+        $lines = array();
+        if (!empty($card['name'])) {
+            $lines[] = esc_html($card['name']);
+        }
+        if (!empty($card['organization'])) {
+            $lines[] = esc_html($card['organization']);
+        }
+
+        foreach (self::emails($card['emails'] ?? array()) as $email) {
+            $lines[] = '<a href="mailto:' . esc_attr($email) . '">' . esc_html($email) . '</a>';
+        }
+
+        return '<p>' . implode('<br>', $lines) . '</p>';
+    }
+
+    private static function content_from_secretariat(array $card) {
+        if ('email' === ($card['type'] ?? '')) {
+            return self::content_from_emails($card['emails'] ?? array());
+        }
+
+        if ('phone' === ($card['type'] ?? '')) {
+            $links = array();
+            foreach (self::texts($card['phones'] ?? array()) as $phone) {
+                $tel = preg_replace('/[^0-9+]/', '', (string) $phone);
+                $links[] = '<a href="tel:' . esc_attr($tel) . '">' . esc_html($phone) . '</a>';
+            }
+            return '<p>' . implode('<br>', $links) . '</p>';
+        }
+
+        return '<p>' . implode('<br>', array_map('esc_html', self::textarea_lines($card['lines'] ?? array()))) . '</p>';
+    }
+
+    private static function content_from_emails($emails) {
+        $links = array();
+        foreach (self::emails($emails) as $email) {
+            $links[] = '<a href="mailto:' . esc_attr($email) . '">' . esc_html($email) . '</a>';
+        }
+        return '<p>' . implode('<br>', $links) . '</p>';
     }
 
     private static function email_links(array $emails, $class) {
@@ -654,15 +653,15 @@ final class Cloudari_BioEnergy_Controller_Contact_Widgets {
     }
 
     private static function widget_1_styles() {
-        return '<style>.eera-contact-card-widget{--eera-card-green:#bed431;--eera-card-blue:#1c5986;--eera-card-title:#363636;--eera-card-text:#818181;--eera-card-border:#e5e5e5;box-sizing:border-box!important;display:block!important;font-family:"Source Sans Pro",Helvetica,Arial,sans-serif!important;margin:0!important;max-width:100%!important;padding:40px 0 20px!important;width:100%!important}.eera-contact-card-widget *,.eera-contact-card-widget *::before,.eera-contact-card-widget *::after{box-sizing:border-box!important;text-shadow:none!important}.eera-contact-card-widget__card{align-items:center!important;background:rgba(255,255,255,.81)!important;border:1px solid var(--eera-card-border)!important;border-radius:3px!important;display:flex!important;flex-direction:column!important;margin:0!important;min-height:0!important;padding:36px 20px 28px!important;position:relative!important;text-align:center!important;width:100%!important}.eera-contact-card-widget__icon{align-items:center!important;background:var(--eera-card-green)!important;border-radius:30px!important;color:var(--eera-card-blue)!important;display:inline-flex!important;height:56px!important;justify-content:center!important;left:50%!important;margin-left:-27px!important;padding:15px 16px 17px!important;position:absolute!important;top:-30px!important;width:54px!important}.eera-contact-card-widget__icon svg{display:block!important;height:100%!important;stroke:currentColor!important;width:100%!important}.eera-contact-card-widget__title{color:var(--eera-card-title)!important;font-size:20px!important;font-weight:400!important;letter-spacing:0!important;line-height:30px!important;margin:0 0 10px!important}.eera-contact-card-widget__details{color:var(--eera-card-text)!important;font-family:"Varela",Helvetica,Arial,sans-serif!important;font-size:14px!important;font-weight:400!important;line-height:1.8!important;margin:0 0 12px!important;overflow-wrap:anywhere!important}.eera-contact-card-widget__link{color:var(--eera-card-text)!important;font-weight:400!important;text-decoration:none!important}.eera-contact-card-widget__link:hover{color:#00aeef!important}</style>';
+        return '<style>.eera-contact-card-widget{--eera-card-green:#bed431;--eera-card-blue:#1c5986;--eera-card-title:#363636;--eera-card-text:#818181;--eera-card-border:#e5e5e5;box-sizing:border-box!important;display:block!important;font-family:"Source Sans Pro",Helvetica,Arial,sans-serif!important;margin:0!important;max-width:100%!important;padding:40px 0 20px!important;width:100%!important}.eera-contact-card-widget *,.eera-contact-card-widget *::before,.eera-contact-card-widget *::after{box-sizing:border-box!important;text-shadow:none!important}.eera-contact-card-widget__card{align-items:center!important;background:rgba(255,255,255,.81)!important;border:1px solid var(--eera-card-border)!important;border-radius:3px!important;display:flex!important;flex-direction:column!important;margin:0!important;min-height:0!important;padding:36px 20px 28px!important;position:relative!important;text-align:center!important;width:100%!important}.eera-contact-card-widget__icon{align-items:center!important;background:var(--eera-card-green)!important;border-radius:30px!important;color:var(--eera-card-blue)!important;display:inline-flex!important;height:56px!important;justify-content:center!important;left:50%!important;margin-left:-27px!important;padding:15px 16px 17px!important;position:absolute!important;top:-30px!important;width:54px!important}.eera-contact-card-widget__icon svg{display:block!important;height:100%!important;stroke:currentColor!important;width:100%!important}.eera-contact-card-widget__title{color:var(--eera-card-title)!important;font-size:20px!important;font-weight:400!important;letter-spacing:0!important;line-height:30px!important;margin:0 0 10px!important}.eera-contact-card-widget__details{color:var(--eera-card-text)!important;font-family:"Varela",Helvetica,Arial,sans-serif!important;font-size:14px!important;font-weight:400!important;line-height:1.8!important;margin:0 0 12px!important;overflow-wrap:anywhere!important}.eera-contact-card-widget__details p{margin:0!important}.eera-contact-card-widget__link,.eera-contact-card-widget__details a{color:var(--eera-card-text)!important;font-weight:400!important;text-decoration:none!important}.eera-contact-card-widget__link:hover,.eera-contact-card-widget__details a:hover{color:#00aeef!important}</style>';
     }
 
     private static function widget_2_styles() {
-        return '<style>.eera-subprogrammes-widget{--eera-section-bg:#e6efde;--eera-card-green:#bed431;--eera-card-blue:#1c5986;--eera-card-title:#363636;--eera-card-text:#687783;--eera-card-border:#e5e5e5;background:#e6efde!important;background-color:#e6efde!important;box-sizing:border-box!important;color:var(--eera-card-title)!important;display:block!important;font-family:"Source Sans Pro",Helvetica,Arial,sans-serif!important;margin:0!important;max-width:100%!important;overflow:hidden!important;padding:31px 44px 40px!important;width:100%!important}.eera-subprogrammes-widget *,.eera-subprogrammes-widget *::before,.eera-subprogrammes-widget *::after{box-sizing:border-box!important;text-shadow:none!important}.eera-subprogrammes-widget__grid{column-gap:32px!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;margin:0!important;row-gap:0!important;width:100%!important}.eera-subprogrammes-widget__grid--two{grid-template-columns:repeat(2,minmax(0,1fr))!important;margin-top:100px!important}.eera-subprogrammes-widget__card{align-items:center!important;background:rgba(255,255,255,.86)!important;border:1px solid var(--eera-card-border)!important;border-radius:3px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;margin:0!important;min-height:194px!important;min-width:0!important;padding:42px 24px 24px!important;position:relative!important;text-align:center!important;width:100%!important}.eera-subprogrammes-widget__icon{align-items:center!important;background:var(--eera-card-green)!important;border-radius:30px!important;color:var(--eera-card-blue)!important;display:inline-flex!important;height:56px!important;justify-content:center!important;left:50%!important;margin-left:-27px!important;padding:15px 16px 17px!important;position:absolute!important;top:-30px!important;width:54px!important}.eera-subprogrammes-widget__icon svg{display:block!important;height:100%!important;stroke:currentColor!important;width:100%!important}.eera-subprogrammes-widget__card-title{color:var(--eera-card-title)!important;font-size:20px!important;font-weight:400!important;letter-spacing:0!important;line-height:30px!important;margin:0 0 12px!important;white-space:normal!important}.eera-subprogrammes-widget__details{color:var(--eera-card-text)!important;font-family:"Varela",Helvetica,Arial,sans-serif!important;font-size:15px!important;font-weight:400!important;line-height:1.65!important;margin:0!important;overflow-wrap:anywhere!important}.eera-subprogrammes-widget__link{color:var(--eera-card-text)!important;font-weight:400!important;text-decoration:none!important}.eera-subprogrammes-widget__link:hover{color:#00aeef!important}@media(max-width:1024px){.eera-subprogrammes-widget{padding-left:24px!important;padding-right:24px!important}.eera-subprogrammes-widget__grid,.eera-subprogrammes-widget__grid--two{column-gap:28px!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;row-gap:72px!important}.eera-subprogrammes-widget__grid--two{margin-top:72px!important}}@media(max-width:640px){.eera-subprogrammes-widget{padding-left:16px!important;padding-right:16px!important}.eera-subprogrammes-widget__grid,.eera-subprogrammes-widget__grid--two{grid-template-columns:1fr!important;row-gap:72px!important}.eera-subprogrammes-widget__grid--two{margin-top:72px!important}}</style>';
+        return '<style>.eera-subprogrammes-widget{--eera-section-bg:#e6efde;--eera-card-green:#bed431;--eera-card-blue:#1c5986;--eera-card-title:#363636;--eera-card-text:#687783;--eera-card-border:#e5e5e5;background:#e6efde!important;background-color:#e6efde!important;box-sizing:border-box!important;color:var(--eera-card-title)!important;display:block!important;font-family:"Source Sans Pro",Helvetica,Arial,sans-serif!important;margin:0!important;max-width:100%!important;overflow:hidden!important;padding:31px 44px 40px!important;width:100%!important}.eera-subprogrammes-widget *,.eera-subprogrammes-widget *::before,.eera-subprogrammes-widget *::after{box-sizing:border-box!important;text-shadow:none!important}.eera-subprogrammes-widget__grid{column-gap:32px!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;margin:0!important;row-gap:0!important;width:100%!important}.eera-subprogrammes-widget__grid--two{grid-template-columns:repeat(2,minmax(0,1fr))!important;margin-top:100px!important}.eera-subprogrammes-widget__card{align-items:center!important;background:rgba(255,255,255,.86)!important;border:1px solid var(--eera-card-border)!important;border-radius:3px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;margin:0!important;min-height:194px!important;min-width:0!important;padding:42px 24px 24px!important;position:relative!important;text-align:center!important;width:100%!important}.eera-subprogrammes-widget__icon{align-items:center!important;background:var(--eera-card-green)!important;border-radius:30px!important;color:var(--eera-card-blue)!important;display:inline-flex!important;height:56px!important;justify-content:center!important;left:50%!important;margin-left:-27px!important;padding:15px 16px 17px!important;position:absolute!important;top:-30px!important;width:54px!important}.eera-subprogrammes-widget__icon svg{display:block!important;height:100%!important;stroke:currentColor!important;width:100%!important}.eera-subprogrammes-widget__card-title{color:var(--eera-card-title)!important;font-size:20px!important;font-weight:400!important;letter-spacing:0!important;line-height:30px!important;margin:0 0 12px!important;white-space:normal!important}.eera-subprogrammes-widget__details{color:var(--eera-card-text)!important;font-family:"Varela",Helvetica,Arial,sans-serif!important;font-size:15px!important;font-weight:400!important;line-height:1.65!important;margin:0!important;overflow-wrap:anywhere!important}.eera-subprogrammes-widget__details p{margin:0!important}.eera-subprogrammes-widget__link,.eera-subprogrammes-widget__details a{color:var(--eera-card-text)!important;font-weight:400!important;text-decoration:none!important}.eera-subprogrammes-widget__link:hover,.eera-subprogrammes-widget__details a:hover{color:#00aeef!important}@media(max-width:1024px){.eera-subprogrammes-widget{padding-left:24px!important;padding-right:24px!important}.eera-subprogrammes-widget__grid,.eera-subprogrammes-widget__grid--two{column-gap:28px!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;row-gap:72px!important}.eera-subprogrammes-widget__grid--two{margin-top:72px!important}}@media(max-width:640px){.eera-subprogrammes-widget{padding-left:16px!important;padding-right:16px!important}.eera-subprogrammes-widget__grid,.eera-subprogrammes-widget__grid--two{grid-template-columns:1fr!important;row-gap:72px!important}.eera-subprogrammes-widget__grid--two{margin-top:72px!important}}</style>';
     }
 
     private static function widget_3_styles() {
-        return '<style>.eera-jp-secretariat-widget{--eera-section-bg:#fff;--eera-card-green:#bed431;--eera-card-blue:#1c5986;--eera-card-title:#363636;--eera-card-text:#687783;--eera-card-border:#e5e5e5;background:#fff!important;background-color:#fff!important;box-sizing:border-box!important;color:var(--eera-card-title)!important;display:block!important;font-family:"Source Sans Pro",Helvetica,Arial,sans-serif!important;margin:0!important;max-width:100%!important;overflow:hidden!important;padding:31px 44px 40px!important;width:100%!important}.eera-jp-secretariat-widget *,.eera-jp-secretariat-widget *::before,.eera-jp-secretariat-widget *::after{box-sizing:border-box!important;text-shadow:none!important}.eera-jp-secretariat-widget__grid{column-gap:32px!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;margin:0!important;row-gap:0!important;width:100%!important}.eera-jp-secretariat-widget__card{align-items:center!important;background:rgba(255,255,255,.86)!important;border:1px solid var(--eera-card-border)!important;border-radius:3px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;margin:0!important;min-height:194px!important;min-width:0!important;padding:42px 24px 24px!important;position:relative!important;text-align:center!important;width:100%!important}.eera-jp-secretariat-widget__icon{align-items:center!important;background:var(--eera-card-green)!important;border-radius:30px!important;color:var(--eera-card-blue)!important;display:inline-flex!important;height:56px!important;justify-content:center!important;left:50%!important;margin-left:-27px!important;padding:15px 16px 17px!important;position:absolute!important;top:-30px!important;width:54px!important}.eera-jp-secretariat-widget__icon svg{display:block!important;height:100%!important;stroke:currentColor!important;width:100%!important}.eera-jp-secretariat-widget__card-title{color:var(--eera-card-title)!important;font-size:20px!important;font-weight:400!important;letter-spacing:0!important;line-height:30px!important;margin:0 0 12px!important;white-space:normal!important}.eera-jp-secretariat-widget__details{color:var(--eera-card-text)!important;font-family:"Varela",Helvetica,Arial,sans-serif!important;font-size:15px!important;font-weight:400!important;line-height:1.65!important;margin:0!important;overflow-wrap:anywhere!important}.eera-jp-secretariat-widget__link{color:var(--eera-card-text)!important;font-weight:400!important;text-decoration:none!important}.eera-jp-secretariat-widget__link:hover{color:#00aeef!important}.eera-jp-secretariat-widget__copy{background:transparent!important;border:0!important;color:#00aeef!important;cursor:pointer!important;display:inline-flex!important;font:inherit!important;font-size:12px!important;font-weight:400!important;justify-content:center!important;line-height:23px!important;margin:8px 0 0!important;min-height:0!important;padding:3px!important;text-transform:none!important}.eera-jp-secretariat-widget__copy.is-copied{color:#ed7676!important}@media(max-width:1024px){.eera-jp-secretariat-widget{padding-left:24px!important;padding-right:24px!important}.eera-jp-secretariat-widget__grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;row-gap:72px!important}}@media(max-width:640px){.eera-jp-secretariat-widget{padding-left:16px!important;padding-right:16px!important}.eera-jp-secretariat-widget__grid{grid-template-columns:1fr!important}}</style>';
+        return '<style>.eera-jp-secretariat-widget{--eera-section-bg:#fff;--eera-card-green:#bed431;--eera-card-blue:#1c5986;--eera-card-title:#363636;--eera-card-text:#687783;--eera-card-border:#e5e5e5;background:#fff!important;background-color:#fff!important;box-sizing:border-box!important;color:var(--eera-card-title)!important;display:block!important;font-family:"Source Sans Pro",Helvetica,Arial,sans-serif!important;margin:0!important;max-width:100%!important;overflow:hidden!important;padding:31px 44px 40px!important;width:100%!important}.eera-jp-secretariat-widget *,.eera-jp-secretariat-widget *::before,.eera-jp-secretariat-widget *::after{box-sizing:border-box!important;text-shadow:none!important}.eera-jp-secretariat-widget__grid{column-gap:32px!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;margin:0!important;row-gap:0!important;width:100%!important}.eera-jp-secretariat-widget__card{align-items:center!important;background:rgba(255,255,255,.86)!important;border:1px solid var(--eera-card-border)!important;border-radius:3px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;margin:0!important;min-height:194px!important;min-width:0!important;padding:42px 24px 24px!important;position:relative!important;text-align:center!important;width:100%!important}.eera-jp-secretariat-widget__icon{align-items:center!important;background:var(--eera-card-green)!important;border-radius:30px!important;color:var(--eera-card-blue)!important;display:inline-flex!important;height:56px!important;justify-content:center!important;left:50%!important;margin-left:-27px!important;padding:15px 16px 17px!important;position:absolute!important;top:-30px!important;width:54px!important}.eera-jp-secretariat-widget__icon svg{display:block!important;height:100%!important;stroke:currentColor!important;width:100%!important}.eera-jp-secretariat-widget__card-title{color:var(--eera-card-title)!important;font-size:20px!important;font-weight:400!important;letter-spacing:0!important;line-height:30px!important;margin:0 0 12px!important;white-space:normal!important}.eera-jp-secretariat-widget__details{color:var(--eera-card-text)!important;font-family:"Varela",Helvetica,Arial,sans-serif!important;font-size:15px!important;font-weight:400!important;line-height:1.65!important;margin:0!important;overflow-wrap:anywhere!important}.eera-jp-secretariat-widget__details p{margin:0!important}.eera-jp-secretariat-widget__link,.eera-jp-secretariat-widget__details a{color:var(--eera-card-text)!important;font-weight:400!important;text-decoration:none!important}.eera-jp-secretariat-widget__link:hover,.eera-jp-secretariat-widget__details a:hover{color:#00aeef!important}.eera-jp-secretariat-widget__copy{background:transparent!important;border:0!important;color:#00aeef!important;cursor:pointer!important;display:inline-flex!important;font:inherit!important;font-size:12px!important;font-weight:400!important;justify-content:center!important;line-height:23px!important;margin:8px 0 0!important;min-height:0!important;padding:3px!important;text-transform:none!important}.eera-jp-secretariat-widget__copy.is-copied{color:#ed7676!important}@media(max-width:1024px){.eera-jp-secretariat-widget{padding-left:24px!important;padding-right:24px!important}.eera-jp-secretariat-widget__grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;row-gap:72px!important}}@media(max-width:640px){.eera-jp-secretariat-widget{padding-left:16px!important;padding-right:16px!important}.eera-jp-secretariat-widget__grid{grid-template-columns:1fr!important}}</style>';
     }
 
     private static function copy_script() {
