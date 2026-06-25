@@ -7,7 +7,7 @@ WordPress plugin for EERA Bioenergy member access control and recovered publicat
 - Plugin name: `Cloudari BioEnergy Essentials`
 - Slug: `cloudari-bioenergy-essentials`
 - Main file: `cloudari-bioenergy-essentials.php`
-- Current version: `1.4.12`
+- Current version: `1.4.13`
 - Update source: `https://github.com/daviidxestrada/cloudari-bioenergy-essentials`
 
 ## GitHub Updates

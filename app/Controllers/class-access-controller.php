@@ -212,7 +212,7 @@ final class Cloudari_BioEnergy_Controller_Access {
     }
 
     public static function exclude_from_public_queries($query) {
-        if (is_admin() || !$query->is_main_query()) {
+        if (is_admin() || $query->is_singular()) {
             return;
         }
 
